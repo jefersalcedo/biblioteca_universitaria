@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 import os
-
+# prueba de commit
 # TODO: Importar el módulo de base de datos y los modelos
 # from .database import [tu_motor_de_base_de_datos]
 # from .models import [tus_modelos]
