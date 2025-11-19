@@ -1,41 +1,119 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
+from pymongo import MongoClient
+from bson import ObjectId
+from typing import List, Optional
+import httpx
 import os
-# prueba de commit
-# TODO: Importar el módulo de base de datos y los modelos
-# from .database import [tu_motor_de_base_de_datos]
-# from .models import [tus_modelos]
 
-# TODO: Configurar la URL de la base de datos desde las variables de entorno
-# DATABASE_URL = os.getenv("DATABASE_URL")
+# ==================== CONFIGURACIÓN ====================
 
-app = FastAPI()
+class Settings(BaseSettings):
+    MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://admin:admin123@mongodb_catalogos:27017/catalogos_db?authSource=admin")
+    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://auth:8001")
+    
+    class Config:
+        env_file = ".env"
 
-# TODO: Crea una instancia del router para organizar los endpoints
-router = APIRouter()
+settings = Settings()
 
-# TODO: Define un endpoint raíz o de salud para verificar que el servicio está funcionando
-@app.get("/")
-def read_root():
-    return {"message": "Servicio de [nombre_del_servicio] en funcionamiento."}
+# ==================== BASE DE DATOS ====================
+
+client = MongoClient(settings.MONGODB_URL)
+db = client.catalogos_db
+
+# ==================== ESQUEMAS ====================
+
+class LibroCreate(BaseModel):
+    titulo: str
+    isbn: str
+    autor: str
+    editorial: str
+    año: int
+    categoria: str
+    cantidad_disponible: int = 0
+
+class LibroResponse(BaseModel):
+    id: str
+    titulo: str
+    isbn: str
+    autor: str
+    editorial: str
+    año: int
+    categoria: str
+    cantidad_disponible: int
+
+# ==================== APP FASTAPI ====================
+
+app = FastAPI(title="Catálogos Service")
+
+# ==================== DEPENDENCIAS ====================
+
+async def verify_token(authorization: Optional[str] = Header(None)):
+    """Verifica el token con el servicio de autenticación"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="No authorization header")
+    
+    try:
+        token = authorization.replace("Bearer ", "")
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{settings.AUTH_SERVICE_URL}/verify",
+                params={"token": token}
+            )
+            if response.status_code != 200:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Token verification failed: {str(e)}")
+
+# ==================== ENDPOINTS ====================
 
 @app.get("/health")
 def health_check():
-    """Endpoint de salud para verificar el estado del servicio."""
-    return {"status": "ok"}
+    return {"status": "healthy", "service": "Catalogos Service"}
 
-# TODO: Implementa los endpoints de tu microservicio aquí
-# Ejemplo de un endpoint GET:
-# @router.get("/[ruta_del_recurso]/")
-# async def get_[recurso]():
-#     # TODO: Agrega la lógica de tu negocio aquí
-#     return {"data": "Aquí van tus datos."}
+@app.post("/libros", response_model=LibroResponse, status_code=201)
+async def crear_libro(libro: LibroCreate, user=Depends(verify_token)):
+    libro_dict = libro.dict()
+    result = db.libros.insert_one(libro_dict)
+    libro_dict["id"] = str(result.inserted_id)
+    return libro_dict
 
-# Ejemplo de un endpoint POST:
-# @router.post("/[ruta_del_recurso]/")
-# async def create_[recurso](item: [tu_modelo_pydantic]):
-#     # TODO: Agrega la lógica para crear un nuevo recurso
-#     return {"message": "[recurso] creado exitosamente."}
+@app.get("/libros", response_model=List[LibroResponse])
+def listar_libros(skip: int = 0, limit: int = 100):
+    libros = []
+    for libro in db.libros.find().skip(skip).limit(limit):
+        libro["id"] = str(libro.pop("_id"))
+        libros.append(libro)
+    return libros
 
+@app.get("/libros/{libro_id}", response_model=LibroResponse)
+def obtener_libro(libro_id: str):
+    libro = db.libros.find_one({"_id": ObjectId(libro_id)})
+    if not libro:
+        raise HTTPException(status_code=404, detail="Libro no encontrado")
+    libro["id"] = str(libro.pop("_id"))
+    return libro
 
-# TODO: Incluir el router en la aplicación principal
-# app.include_router(router, prefix="/api/v1")
+@app.put("/libros/{libro_id}", response_model=LibroResponse)
+async def actualizar_libro(libro_id: str, libro: LibroCreate, user=Depends(verify_token)):
+    result = db.libros.update_one(
+        {"_id": ObjectId(libro_id)},
+        {"$set": libro.dict()}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Libro no encontrado")
+    return await obtener_libro(libro_id)
+
+@app.delete("/libros/{libro_id}")
+async def eliminar_libro(libro_id: str, user=Depends(verify_token)):
+    result = db.libros.delete_one({"_id": ObjectId(libro_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Libro no encontrado")
+    return {"message": "Libro eliminado"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8002)
