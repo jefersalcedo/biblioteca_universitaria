@@ -1,16 +1,7 @@
-# Dependencias básicas para un servicio FastAPI
-fastapi
-uvicorn
-
-# TODO: Agrega las librerías específicas de tu servicio aquí
-
-# Por ejemplo, si usas PostgreSQL:
-# psycopg2-binary
-# sqlalchemy
-
-# Si usas MongoDB:
-# motor
-# pymongo
-
-# Si usas Redis:
-# redis
+fastapi==0.104.1
+uvicorn==0.24.0
+redis==5.0.1
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+httpx==0.25.2
