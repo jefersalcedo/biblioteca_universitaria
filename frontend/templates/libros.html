@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Libros - Biblioteca Universitaria</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+        
+        .navbar nav a {
+            color: #333;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .navbar nav a:hover {
+            color: #667eea;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .book-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+        }
+        
+        .book-title {
+            color: #667eea;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .book-author {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .book-details {
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .book-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .book-detail-label {
+            color: #999;
+        }
+        
+        .book-detail-value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .availability {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+        
+        .available {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .unavailable {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .no-books {
+            background: white;
+            padding: 3rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .no-books h3 {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🏛️ Biblioteca</h1>
+        <nav>
+            <a href="/">Hola</a>
+            <a href="/libros">Catálogo</a>
+            <a href="/mis-prestamos">Mis Préstamos</a>
+            <a href="/mis-reservas">Mis Reservas</a>
+            {% if user %}
+                <a href="/logout">Salir</a>
+            {% else %}
+                <a href="/login">Login</a>
+            {% endif %}
+        </nav>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h2>📚 Catálogo de Libros</h2>
+            <p>Explora nuestra colección de libros disponibles</p>
+        </div>
+        
+        {% if libros and libros|length > 0 %}
+        <div class="books-grid">
+            {% for libro in libros %}
+            <div class="book-card">
+                <div class="book-title">{{ libro.titulo }}</div>
+                <div class="book-author">por {{ libro.autor }}</div>
+                
+                <div class="book-details">
+                    <div class="book-detail">
+                        <span class="book-detail-label">ISBN:</span>
+                        <span class="book-detail-value">{{ libro.isbn }}</span>
+                    </div>
+                    <div class="book-detail">
+                        <span class="book-detail-label">Editorial:</span>
+                        <span class="book-detail-value">{{ libro.editorial }}</span>
+                    </div>
+                    <div class="book-detail">
+                        <span class="book-detail-label">Año:</span>
+                        <span class="book-detail-value">{{ libro.anio }}</span>
+                    </div>
+                    <div class="book-detail">
+                        <span class="book-detail-label">Categoría:</span>
+                        <span class="book-detail-value">{{ libro.categoria }}</span>
+                    </div>
+                    <div class="book-detail">
+                        <span class="book-detail-label">Disponibles:</span>
+                        <span class="book-detail-value">{{ libro.cantidad_disponible }} ejemplares</span>
+                    </div>
+                </div>
+                
+                {% if libro.cantidad_disponible > 0 %}
+                <span class="availability available">✓ Disponible</span>
+                {% else %}
+                <span class="availability unavailable">✗ No disponible</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-books">
+            <h3>📭 No hay libros en el catálogo</h3>
+            <p>Actualmente no hay libros disponibles para mostrar.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

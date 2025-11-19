@@ -30,28 +30,38 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         
-        # Llamar al API Gateway
-        response = requests.post(
-            f"{API_GATEWAY_URL}/api/authentication/login",
-            data={"username": username, "password": password}
-        )
-        
-        if response.status_code == 200:
-            data = response.json()
-            session["access_token"] = data["access_token"]
-            
-            # Obtener info del usuario
-            user_response = requests.get(
-                f"{API_GATEWAY_URL}/api/authentication/users/me",
-                headers={"Authorization": f"Bearer {data['access_token']}"}
+        try:
+            # Llamar directamente al servicio de autenticación
+            response = requests.post(
+                "http://authentication:8001/login",
+                data={"username": username, "password": password},
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=5
             )
             
-            if user_response.status_code == 200:
-                session["user"] = user_response.json()
-                flash("Bienvenido!", "success")
+            if response.status_code == 200:
+                data = response.json()
+                session["access_token"] = data["access_token"]
+                session["token_type"] = data.get("token_type", "bearer")
+                
+                # Guardar información básica del usuario
+                session["user"] = {
+                    "username": username,
+                    "is_authenticated": True
+                }
+                
+                flash("¡Bienvenido!", "success")
                 return redirect(url_for("index"))
-        
-        flash("Credenciales incorrectas", "error")
+            else:
+                flash("Credenciales incorrectas", "error")
+                
+        except requests.exceptions.Timeout:
+            flash("Tiempo de espera agotado. Intenta de nuevo.", "error")
+        except requests.exceptions.ConnectionError:
+            flash("Error de conexión con el servidor.", "error")
+        except Exception as e:
+            app.logger.error(f"Error en login: {str(e)}")
+            flash("Error inesperado. Por favor intenta de nuevo.", "error")
     
     return render_template("login.html")
 
@@ -63,19 +73,25 @@ def register():
             "email": request.form.get("email"),
             "username": request.form.get("username"),
             "full_name": request.form.get("full_name"),
-            "password": request.form.get("password"),
-            "roles": ["estudiante"]
+            "password": request.form.get("password")
         }
         
-        response = requests.post(
-            f"{API_GATEWAY_URL}/api/authentication/register",
-            json=data
-        )
-        
-        if response.status_code == 201:
-            flash("Usuario creado exitosamente. Por favor inicia sesión.", "success")
-            return redirect(url_for("login"))
-        else:
+        try:
+            response = requests.post(
+                "http://authentication:8001/register",
+                json=data,
+                timeout=5
+            )
+            
+            if response.status_code == 200 or response.status_code == 201:
+                flash("Usuario creado exitosamente. Por favor inicia sesión.", "success")
+                return redirect(url_for("login"))
+            else:
+                error_msg = response.json().get("detail", "Error al crear usuario")
+                flash(error_msg, "error")
+                
+        except Exception as e:
+            app.logger.error(f"Error en registro: {str(e)}")
             flash("Error al crear usuario", "error")
     
     return render_template("register.html")
@@ -90,11 +106,17 @@ def logout():
 @app.route("/libros")
 def libros():
     """Lista de libros del catálogo"""
-    response = requests.get(f"{API_GATEWAY_URL}/api/catalogo/libros")
-    
-    if response.status_code == 200:
-        libros = response.json()
-        return render_template("libros.html", libros=libros, user=session.get("user"))
+    try:
+        response = requests.get(
+            "http://catalogo:8002/libros",
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            libros_data = response.json()
+            return render_template("libros.html", libros=libros_data, user=session.get("user"))
+    except Exception as e:
+        app.logger.error(f"Error al cargar libros: {str(e)}")
     
     flash("Error al cargar libros", "error")
     return redirect(url_for("index"))
@@ -106,14 +128,18 @@ def mis_prestamos():
         flash("Debes iniciar sesión", "warning")
         return redirect(url_for("login"))
     
-    response = requests.get(
-        f"{API_GATEWAY_URL}/api/prestamo/prestamo",
-        headers=get_auth_header()
-    )
-    
-    if response.status_code == 200:
-        prestamo = response.json()
-        return render_template("prestamo.html", prestamo=prestamo, user=session.get("user"))
+    try:
+        response = requests.get(
+            "http://prestamo:8003/prestamos",
+            headers=get_auth_header(),
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            prestamos_data = response.json()
+            return render_template("prestamos.html", prestamos=prestamos_data, user=session.get("user"))
+    except Exception as e:
+        app.logger.error(f"Error al cargar préstamos: {str(e)}")
     
     flash("Error al cargar préstamos", "error")
     return redirect(url_for("index"))
@@ -125,17 +151,26 @@ def mis_reservas():
         flash("Debes iniciar sesión", "warning")
         return redirect(url_for("login"))
     
-    response = requests.get(
-        f"{API_GATEWAY_URL}/api/reserva/reserva",
-        headers=get_auth_header()
-    )
-    
-    if response.status_code == 200:
-        reserva = response.json()
-        return render_template("reserva.html", reserva=reserva, user=session.get("user"))
+    try:
+        response = requests.get(
+            "http://reserva:8004/reservas",
+            headers=get_auth_header(),
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            reservas_data = response.json()
+            return render_template("reservas.html", reservas=reservas_data, user=session.get("user"))
+    except Exception as e:
+        app.logger.error(f"Error al cargar reservas: {str(e)}")
     
     flash("Error al cargar reservas", "error")
     return redirect(url_for("index"))
+
+@app.route("/health")
+def health():
+    """Health check endpoint"""
+    return {"status": "healthy", "service": "Frontend"}, 200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

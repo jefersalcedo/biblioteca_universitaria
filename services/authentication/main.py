@@ -177,28 +177,17 @@ app.add_middleware(
 def startup():
     Base.metadata.create_all(bind=engine)
     
-    # Crear roles por defecto
     db = SessionLocal()
     try:
-        for role_enum in UserRole:
-            existing_role = db.query(Role).filter(Role.name == role_enum).first()
-            if not existing_role:
-                db_role = Role(name=role_enum, description=f"Rol de {role_enum.value}")
-                db.add(db_role)
-        db.commit()
-        
-        # Crear admin por defecto
-        admin = get_user_by_username(db, "admin")
+        admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
             admin_data = UserCreate(
-                email="admin@biblioteca.com",
                 username="admin",
-                full_name="Administrador",
-                password="admin123",
-                roles=[UserRole.ADMINISTRADOR]
+                email="admin@biblioteca.com",
+                password="Admin123!",
+                full_name="Administrador del Sistema"  # ← Agregar esta línea
             )
             create_user(db, admin_data)
-            print("✓ Usuario admin creado")
     finally:
         db.close()
 

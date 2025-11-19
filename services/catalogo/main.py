@@ -11,7 +11,7 @@ import os
 
 class Settings(BaseSettings):
     MONGODB_URL: str = os.getenv("MONGODB_URL", "mongodb://admin:admin123@mongodb_catalogos:27017/catalogos_db?authSource=admin")
-    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://auth:8001")
+    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://authentication:8001")
     
     class Config:
         env_file = ".env"
@@ -30,7 +30,7 @@ class LibroCreate(BaseModel):
     isbn: str
     autor: str
     editorial: str
-    año: int
+    anio: int  # ← CAMBIADO de 'año' a 'anio'
     categoria: str
     cantidad_disponible: int = 0
 
@@ -40,7 +40,7 @@ class LibroResponse(BaseModel):
     isbn: str
     autor: str
     editorial: str
-    año: int
+    anio: int  # ← CAMBIADO de 'año' a 'anio'
     categoria: str
     cantidad_disponible: int
 
@@ -57,8 +57,8 @@ async def verify_token(authorization: Optional[str] = Header(None)):
     
     try:
         token = authorization.replace("Bearer ", "")
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.post(
                 f"{settings.AUTH_SERVICE_URL}/verify",
                 params={"token": token}
             )
@@ -105,7 +105,7 @@ async def actualizar_libro(libro_id: str, libro: LibroCreate, user=Depends(verif
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Libro no encontrado")
-    return await obtener_libro(libro_id)
+    return obtener_libro(libro_id)
 
 @app.delete("/libros/{libro_id}")
 async def eliminar_libro(libro_id: str, user=Depends(verify_token)):
