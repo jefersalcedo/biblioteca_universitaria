@@ -13,8 +13,8 @@ import os
 
 class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("PRESTAMOS_DATABASE_URL", "postgresql://postgres:postgres@postgres_prestamos:5432/prestamos_db")
-    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://auth:8001")
-    CATALOGOS_SERVICE_URL: str = os.getenv("CATALOGOS_SERVICE_URL", "http://catalogos:8002")
+    AUTH_SERVICE_URL: str = os.getenv("AUTH_SERVICE_URL", "http://authentication:8001")
+    CATALOGOS_SERVICE_URL: str = os.getenv("CATALOGOS_SERVICE_URL", "http://catalogo:8002")
     
     class Config:
         env_file = ".env"

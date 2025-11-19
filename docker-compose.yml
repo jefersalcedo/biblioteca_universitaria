@@ -12,7 +12,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_auth_data:/var/lib/postgresql/data
+      - postgres_authentication_data:/var/lib/postgresql/data
     networks:
       - biblioteca_network
     healthcheck:
@@ -109,10 +109,10 @@ services:
     ports:
       - "8002:8002"
     environment:
-      MONGODB_URL: mongodb://admin:admin123@mongodb_catalogo:27017/catalogo_db?authSource=admin
+      MONGODB_URL: mongodb://admin:admin123@mongodb_catalogos:27017/catalogos_db?authSource=admin
       AUTH_SERVICE_URL: http://authentication:8001
     depends_on:
-      mongodb_catalogo:
+      mongodb_catalogos:
         condition: service_healthy
       authentication:
         condition: service_started
@@ -131,11 +131,11 @@ services:
     ports:
       - "8003:8003"
     environment:
-      PRESTAMOS_DATABASE_URL: postgresql://postgres:postgres@postgres_prestamo:5432/prestamo_db
+      PRESTAMOS_DATABASE_URL: postgresql://postgres:postgres@postgres_prestamos:5432/prestamos_db
       AUTH_SERVICE_URL: http://authentication:8001
       CATALOGOS_SERVICE_URL: http://catalogo:8002
     depends_on:
-      postgres_prestamo:
+      postgres_prestamos:
         condition: service_healthy
       authentication:
         condition: service_started
@@ -172,7 +172,7 @@ services:
       - ./services/reserva:/app
     restart: unless-stopped
 
-  # API Gateway (si existe en la plantilla, sino crear)
+  # API Gateway
   api-gateway:
     build:
       context: ./api-gateway
@@ -196,7 +196,7 @@ services:
       - ./api-gateway:/app
     restart: unless-stopped
 
-  # Frontend (si existe en la plantilla)
+  # Frontend
   frontend:
     build:
       context: ./frontend
@@ -220,6 +220,6 @@ networks:
 
 volumes:
   postgres_authentication_data:
-  postgres_prestamo_data:
-  mongodb_catalogo_data:
-  redis_reserva_data:
+  postgres_prestamos_data:
+  mongodb_catalogos_data:
+  redis_reservas_data:
