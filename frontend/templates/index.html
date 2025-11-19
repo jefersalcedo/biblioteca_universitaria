@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>¡Bienvenido al Proyecto del Seminario!</h2>
-    <p>Este es el frontend de tu proyecto. Utiliza el API Gateway para interactuar con los microservicios.</p>
-
-    <a href="{{ url_for('new_item') }}">Crear un nuevo ítem</a>
-
+<div class="jumbotron text-center py-5">
+    <h1 class="display-4">Bienvenido a la Biblioteca Universitaria</h1>
+    <p class="lead">Sistema de gestión de préstamos y reservas</p>
+    <hr class="my-4">
+    {% if user %}
+        <p>¡Hola {{ user.full_name }}! Explora nuestro catálogo</p>
+        <a class="btn btn-primary btn-lg" href="/libros" role="button">Ver Catálogo</a>
+    {% else %}
+        <p>Inicia sesión para acceder a todos los servicios</p>
+        <a class="btn btn-primary btn-lg" href="/login" role="button">Iniciar Sesión</a>
+        <a class="btn btn-secondary btn-lg" href="/register" role="button">Registrarse</a>
+    {% endif %}
+</div>
 {% endblock %}

@@ -1,54 +1,141 @@
-# /frontend/app.py
-
-from flask import Flask, render_template, request, redirect, url_for
-import os
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import requests
+import os
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
 
-# Obtén la URL del API Gateway desde las variables de entorno.
-# Esta variable debe estar configurada en el docker-compose.yml.
-API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://localhost:8000")
+API_GATEWAY_URL = os.getenv("API_GATEWAY_URL", "http://api-gateway:8000")
+
+# ==================== HELPERS ====================
+
+def get_auth_header():
+    """Obtiene el header de autorización desde la sesión"""
+    token = session.get("access_token")
+    if token:
+        return {"Authorization": f"Bearer {token}"}
+    return {}
+
+# ==================== ROUTES ====================
 
 @app.route("/")
 def index():
-    """Ruta de la página de inicio."""
-    
-    # TODO: Haz una llamada al API Gateway para obtener datos, si es necesario.
-    # Por ejemplo, para obtener la lista de items de un servicio:
-    # try:
-    #     response = requests.get(f"{API_GATEWAY_URL}/api/v1/[recurso]")
-    #     response.raise_for_status()  # Lanza un error para códigos de estado 4xx/5xx
-    #     items = response.json()
-    # except requests.exceptions.RequestException as e:
-    #     print(f"Error al conectar con el API Gateway: {e}")
-    #     items = []
+    """Página principal"""
+    return render_template("index.html", user=session.get("user"))
 
-    # Pasa los datos a la plantilla para renderizarlos.
-    return render_template("index.html", title="Inicio")
-
-@app.route("/new-item", methods=["GET", "POST"])
-def new_item():
-    """Ruta para crear un nuevo ítem."""
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Login de usuarios"""
     if request.method == "POST":
-        # TODO: Recoge los datos del formulario.
-        # item_data = {
-        #     "name": request.form.get("name"),
-        #     "description": request.form.get("description")
-        # }
+        username = request.form.get("username")
+        password = request.form.get("password")
         
-        # TODO: Envía los datos al API Gateway para crear un nuevo recurso.
-        # try:
-        #     response = requests.post(f"{API_GATEWAY_URL}/api/v1/[recurso]", json=item_data)
-        #     response.raise_for_status()
-        #     return redirect(url_for("index"))
-        # except requests.exceptions.RequestException as e:
-        #     print(f"Error al crear el ítem: {e}")
-        #     return "Error al crear el ítem.", 500
+        # Llamar al API Gateway
+        response = requests.post(
+            f"{API_GATEWAY_URL}/api/authentication/login",
+            data={"username": username, "password": password}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            session["access_token"] = data["access_token"]
             
-        return "Método POST no implementado.", 501
+            # Obtener info del usuario
+            user_response = requests.get(
+                f"{API_GATEWAY_URL}/api/authentication/users/me",
+                headers={"Authorization": f"Bearer {data['access_token']}"}
+            )
+            
+            if user_response.status_code == 200:
+                session["user"] = user_response.json()
+                flash("Bienvenido!", "success")
+                return redirect(url_for("index"))
+        
+        flash("Credenciales incorrectas", "error")
+    
+    return render_template("login.html")
 
-    return render_template("form.html", title="Nuevo Ítem")
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Registro de nuevos usuarios"""
+    if request.method == "POST":
+        data = {
+            "email": request.form.get("email"),
+            "username": request.form.get("username"),
+            "full_name": request.form.get("full_name"),
+            "password": request.form.get("password"),
+            "roles": ["estudiante"]
+        }
+        
+        response = requests.post(
+            f"{API_GATEWAY_URL}/api/authentication/register",
+            json=data
+        )
+        
+        if response.status_code == 201:
+            flash("Usuario creado exitosamente. Por favor inicia sesión.", "success")
+            return redirect(url_for("login"))
+        else:
+            flash("Error al crear usuario", "error")
+    
+    return render_template("register.html")
+
+@app.route("/logout")
+def logout():
+    """Cerrar sesión"""
+    session.clear()
+    flash("Sesión cerrada", "info")
+    return redirect(url_for("index"))
+
+@app.route("/libros")
+def libros():
+    """Lista de libros del catálogo"""
+    response = requests.get(f"{API_GATEWAY_URL}/api/catalogo/libros")
+    
+    if response.status_code == 200:
+        libros = response.json()
+        return render_template("libros.html", libros=libros, user=session.get("user"))
+    
+    flash("Error al cargar libros", "error")
+    return redirect(url_for("index"))
+
+@app.route("/mis-prestamos")
+def mis_prestamos():
+    """Préstamos del usuario actual"""
+    if "access_token" not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for("login"))
+    
+    response = requests.get(
+        f"{API_GATEWAY_URL}/api/prestamo/prestamo",
+        headers=get_auth_header()
+    )
+    
+    if response.status_code == 200:
+        prestamo = response.json()
+        return render_template("prestamo.html", prestamo=prestamo, user=session.get("user"))
+    
+    flash("Error al cargar préstamos", "error")
+    return redirect(url_for("index"))
+
+@app.route("/mis-reservas")
+def mis_reservas():
+    """Reservas del usuario actual"""
+    if "access_token" not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for("login"))
+    
+    response = requests.get(
+        f"{API_GATEWAY_URL}/api/reserva/reserva",
+        headers=get_auth_header()
+    )
+    
+    if response.status_code == 200:
+        reserva = response.json()
+        return render_template("reserva.html", reserva=reserva, user=session.get("user"))
+    
+    flash("Error al cargar reservas", "error")
+    return redirect(url_for("index"))
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
