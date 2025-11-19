@@ -1,73 +1,225 @@
 services:
+  # ==================== BASES DE DATOS ====================
+  
+  # PostgreSQL para Authentication
+  postgres_authentication:
+    image: postgres:15-alpine
+    container_name: postgres_authentication
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: authentication_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - biblioteca_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # PostgreSQL para Préstamos
+  postgres_prestamos:
+    image: postgres:15-alpine
+    container_name: postgres_prestamos
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: prestamos_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_prestamos_data:/var/lib/postgresql/data
+    networks:
+      - biblioteca_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB para Catálogos
+  mongodb_catalogos:
+    image: mongo:7
+    container_name: mongodb_catalogos
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: catalogos_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_catalogos_data:/data/db
+    networks:
+      - biblioteca_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para Reservas
+  redis_reservas:
+    image: redis:7-alpine
+    container_name: redis_reservas
+    command: redis-server --requirepass redis123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_reservas_data:/data
+    networks:
+      - biblioteca_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== MICROSERVICIOS ====================
+
+  # Authentication Service
+  authentication:
+    build:
+      context: ./services/authentication
+      dockerfile: Dockerfile
+    container_name: authentication_service
+    ports:
+      - "8001:8001"
+    environment:
+      AUTH_DATABASE_URL: postgresql://postgres:postgres@postgres_authentication:5432/authentication_db
+      SECRET_KEY: your-super-secret-key-change-in-production
+    depends_on:
+      postgres_authentication:
+        condition: service_healthy
+    networks:
+      - biblioteca_network
+    volumes:
+      - ./services/authentication:/app
+    restart: unless-stopped
+
+  # Catálogos Service
+  catalogo:
+    build:
+      context: ./services/catalogo
+      dockerfile: Dockerfile
+    container_name: catalogo_service
+    ports:
+      - "8002:8002"
+    environment:
+      MONGODB_URL: mongodb://admin:admin123@mongodb_catalogo:27017/catalogo_db?authSource=admin
+      AUTH_SERVICE_URL: http://authentication:8001
+    depends_on:
+      mongodb_catalogo:
+        condition: service_healthy
+      authentication:
+        condition: service_started
+    networks:
+      - biblioteca_network
+    volumes:
+      - ./services/catalogo:/app
+    restart: unless-stopped
+
+  # Préstamos Service
+  prestamo:
+    build:
+      context: ./services/prestamo
+      dockerfile: Dockerfile
+    container_name: prestamo_service
+    ports:
+      - "8003:8003"
+    environment:
+      PRESTAMOS_DATABASE_URL: postgresql://postgres:postgres@postgres_prestamo:5432/prestamo_db
+      AUTH_SERVICE_URL: http://authentication:8001
+      CATALOGOS_SERVICE_URL: http://catalogo:8002
+    depends_on:
+      postgres_prestamo:
+        condition: service_healthy
+      authentication:
+        condition: service_started
+      catalogo:
+        condition: service_started
+    networks:
+      - biblioteca_network
+    volumes:
+      - ./services/prestamo:/app
+    restart: unless-stopped
+
+  # Reservas Service
+  reserva:
+    build:
+      context: ./services/reserva
+      dockerfile: Dockerfile
+    container_name: reserva_service
+    ports:
+      - "8004:8004"
+    environment:
+      REDIS_URL: redis://:redis123@redis_reservas:6379/0
+      AUTH_SERVICE_URL: http://authentication:8001
+      CATALOGOS_SERVICE_URL: http://catalogo:8002
+    depends_on:
+      redis_reservas:
+        condition: service_healthy
+      authentication:
+        condition: service_started
+      catalogo:
+        condition: service_started
+    networks:
+      - biblioteca_network
+    volumes:
+      - ./services/reserva:/app
+    restart: unless-stopped
+
+  # API Gateway (si existe en la plantilla, sino crear)
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      AUTH_SERVICE_URL: http://authentication:8001
+      CATALOGOS_SERVICE_URL: http://catalogo:8002
+      PRESTAMOS_SERVICE_URL: http://prestamo:8003
+      RESERVAS_SERVICE_URL: http://reserva:8004
+    depends_on:
+      - authentication
+      - catalogo
+      - prestamo
+      - reserva
+    networks:
+      - biblioteca_network
+    volumes:
+      - ./api-gateway:/app
+    restart: unless-stopped
+
+  # Frontend (si existe en la plantilla)
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: frontend
     ports:
       - "5000:5000"
     environment:
-      - API_GATEWAY_URL=http://api-gateway:8000
+      API_GATEWAY_URL: http://api-gateway:8000
     depends_on:
       - api-gateway
-
-  api-gateway:
-    build: ./api-gateway
-    container_name: api-gateway
-    ports:
-      - "8000:8000"
-    depends_on:
-      - auth-service
-    # Aquí puedes agregar los otros servicios base
-
-  # Microservicio de Autenticación
-  auth-service:
-    build: ./services/authentication
-    container_name: auth-service
-    ports:
-      - "8001:8001"
-    environment:
-      - DATABASE_URL=mongodb://auth-db:27017/auth_db
-    depends_on:
-      - auth-db
-
-  # Base de datos para el servicio de autenticación
-  auth-db:
-    image: mongo:latest
-    container_name: auth-db
-    ports:
-      - "27017:27017"
+    networks:
+      - biblioteca_network
     volumes:
-      - auth_data:/data/db
+      - ./frontend:/app
+    restart: unless-stopped
 
-  # --- Plantillas de Microservicios ---
-  # TODO: Copiar y modificar "service1" para cada servicio según el tema seleccionado
-  
-  # Microservicio de Nombre_del_microservicio
-  service1-service:
-     build: ./services/service1 
-     container_name: service1-service
-     ports:
-       - "8002:8002"
-     environment:
-       - DATABASE_URL=postgresql://user:password@service1-db:5432/service1_db
-     depends_on:
-       - service1-db
-
-  # Base de datos para el servicio1
-  service1-db:
-     image: postgres:latest
-     container_name: service1-db
-     environment:
-       - POSTGRES_USER=user
-       - POSTGRES_PASSWORD=password
-       - POSTGRES_DB=service1_db
-     ports:
-       - "5432:5432"
-     volumes:
-       - service1_data:/var/lib/postgresql/data
+networks:
+  biblioteca_network:
+    driver: bridge
 
 volumes:
-  auth_data:
-  service1_data:
-  service2_data:
-  service3_data:
+  postgres_authentication_data:
+  postgres_prestamo_data:
+  mongodb_catalogo_data:
+  redis_reserva_data:
