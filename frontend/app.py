@@ -64,12 +64,37 @@ def login():
                 session["access_token"] = data["access_token"]
                 session["token_type"] = data.get("token_type", "bearer")
                 
-                # Obtener información completa del usuario
-                user_info = get_user_info()
-                if user_info:
-                    session["user"] = user_info
+                # ===== CORRECCIÓN: Obtener información completa del usuario INMEDIATAMENTE =====
+                try:
+                    user_response = requests.get(
+                        "http://authentication:8001/users/me",
+                        headers={"Authorization": f"Bearer {data['access_token']}"},
+                        timeout=5
+                    )
+                    
+                    if user_response.status_code == 200:
+                        user_info = user_response.json()
+                        session["user"] = user_info
+                        app.logger.info(f"Usuario autenticado: {user_info}")
+                        flash(f"¡Bienvenido {user_info.get('full_name', username)}!", "success")
+                    else:
+                        # Fallback: guardar info básica
+                        app.logger.warning("No se pudo obtener info del usuario, usando fallback")
+                        session["user"] = {
+                            "username": username,
+                            "is_authenticated": True,
+                            "roles": []
+                        }
+                        flash("¡Bienvenido!", "success")
+                except Exception as e:
+                    app.logger.error(f"Error al obtener info del usuario: {str(e)}")
+                    session["user"] = {
+                        "username": username,
+                        "is_authenticated": True,
+                        "roles": []
+                    }
+                    flash("¡Bienvenido!", "success")
                 
-                flash("¡Bienvenido!", "success")
                 return redirect(url_for("index"))
             else:
                 flash("Credenciales incorrectas", "error")
@@ -202,6 +227,8 @@ def admin_panel():
     
     # Verificar que el usuario sea admin
     user = get_user_info()
+    app.logger.info(f"Usuario en admin_panel: {user}")
+    
     if not user or "administrador" not in user.get("roles", []):
         flash("No tienes permisos de administrador", "error")
         return redirect(url_for("index"))

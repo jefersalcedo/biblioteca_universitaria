@@ -1,32 +1,81 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="jumbotron text-center py-5">
-    <h1 class="display-4">Bienvenido PIGBU Biblioteca Universitaria</h1>
+<div class="text-center py-5">
+    <h1 class="display-4">Bienvenido a PIGBU</h1>
+    <h2 class="display-6 text-muted">Biblioteca Universitaria</h2>
     <p class="lead">Sistema de gestión de préstamos y reservas</p>
     <hr class="my-4">
+    
     {% if user %}
-        <p>¡Hola {{ user.full_name }}! Explora nuestro catálogo</p>
-        <div class="d-flex justify-content-center gap-3">
-            <a class="btn btn-primary btn-lg" href="/libros" role="button">Ver Catálogo</a>
-            <a class="btn btn-info btn-lg" href="/mis-prestamos" role="button">Mis Préstamos</a>
-            <a class="btn btn-secondary btn-lg" href="/mis-reservas" role="button">Mis Reservas</a>
-            {% if user and 'administrador' in user.get('roles', []) %}
-                <a class="btn btn-warning btn-lg" href="/admin" role="button">Panel Admin</a>
+        <div class="mb-4">
+            <h3>¡Hola {{ user.full_name }}!</h3>
+            <p class="text-muted">Explora nuestro catálogo y gestiona tus préstamos</p>
+        </div>
+        
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a class="btn btn-primary btn-lg" href="/libros" role="button">
+                📚 Ver Catálogo
+            </a>
+            <a class="btn btn-info btn-lg" href="/mis-prestamos" role="button">
+                📖 Mis Préstamos
+            </a>
+            <a class="btn btn-secondary btn-lg" href="/mis-reservas" role="button">
+                🔖 Mis Reservas
+            </a>
+            {% if user.get('roles') and 'administrador' in user.get('roles', []) %}
+                <a class="btn btn-warning btn-lg" href="/admin" role="button">
+                    👑 Panel Admin
+                </a>
             {% endif %}
         </div>
+        
+        {% if user.get('roles') and 'administrador' in user.get('roles', []) %}
+        <div class="alert alert-info mt-4 mx-auto" style="max-width: 600px;">
+            <strong>👑 Eres administrador</strong> - Tienes acceso al <a href="/admin" class="alert-link">Panel de Administración</a> donde puedes gestionar usuarios y roles.
+        </div>
+        {% endif %}
+        
     {% else %}
         <p>Inicia sesión para acceder a todos los servicios</p>
-        <div class="d-flex justify-content-center gap-3">
-            <a class="btn btn-primary btn-lg" href="/login" role="button">Iniciar Sesión</a>
-            <a class="btn btn-secondary btn-lg" href="/register" role="button">Registrarse</a>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a class="btn btn-primary btn-lg" href="/login" role="button">
+                🔐 Iniciar Sesión
+            </a>
+            <a class="btn btn-secondary btn-lg" href="/register" role="button">
+                📝 Registrarse
+            </a>
         </div>
     {% endif %}
 </div>
 
-{% if user and 'administrador' in user.get('roles', []) %}
-<div class="alert alert-info text-center">
-    <strong>Eres administrador</strong> - Tienes acceso al <a href="/admin" class="alert-link">Panel de Administración</a>
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h2 class="card-title">📚</h2>
+                <h5 class="card-title">Catálogo</h5>
+                <p class="card-text">Explora nuestra colección de libros disponibles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h2 class="card-title">📖</h2>
+                <h5 class="card-title">Préstamos</h5>
+                <p class="card-text">Gestiona tus préstamos activos y su historial</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h2 class="card-title">🔖</h2>
+                <h5 class="card-title">Reservas</h5>
+                <p class="card-text">Reserva libros que están prestados</p>
+            </div>
+        </div>
+    </div>
 </div>
-{% endif %}
 {% endblock %}
