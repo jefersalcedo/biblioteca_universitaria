@@ -128,6 +128,7 @@ def mis_prestamos():
         flash("Debes iniciar sesión", "warning")
         return redirect(url_for("login"))
     
+    prestamos_data = []
     try:
         response = requests.get(
             "http://prestamo:8003/prestamos",
@@ -137,12 +138,14 @@ def mis_prestamos():
         
         if response.status_code == 200:
             prestamos_data = response.json()
-            return render_template("prestamos.html", prestamos=prestamos_data, user=session.get("user"))
+        else:
+            app.logger.warning(f"Error del servicio de préstamos: {response.status_code}")
     except Exception as e:
         app.logger.error(f"Error al cargar préstamos: {str(e)}")
     
-    flash("Error al cargar préstamos", "error")
-    return redirect(url_for("index"))
+    # Siempre mostrar la página, aunque esté vacía
+    return render_template("prestamos.html", prestamos=prestamos_data, user=session.get("user"))
+
 
 @app.route("/mis-reservas")
 def mis_reservas():
@@ -151,6 +154,7 @@ def mis_reservas():
         flash("Debes iniciar sesión", "warning")
         return redirect(url_for("login"))
     
+    reservas_data = []
     try:
         response = requests.get(
             "http://reserva:8004/reservas",
@@ -160,12 +164,13 @@ def mis_reservas():
         
         if response.status_code == 200:
             reservas_data = response.json()
-            return render_template("reservas.html", reservas=reservas_data, user=session.get("user"))
+        else:
+            app.logger.warning(f"Error del servicio de reservas: {response.status_code}")
     except Exception as e:
         app.logger.error(f"Error al cargar reservas: {str(e)}")
     
-    flash("Error al cargar reservas", "error")
-    return redirect(url_for("index"))
+    # Siempre mostrar la página, aunque esté vacía
+    return render_template("reservas.html", reservas=reservas_data, user=session.get("user"))
 
 @app.route("/health")
 def health():
