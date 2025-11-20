@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Préstamos - Biblioteca Universitaria</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .navbar h1 {
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+        
+        .navbar nav a {
+            color: #333;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .navbar nav a:hover {
+            color: #667eea;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .prestamos-list {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .prestamo-item {
+            border-bottom: 1px solid #eee;
+            padding: 1.5rem 0;
+        }
+        
+        .prestamo-item:last-child {
+            border-bottom: none;
+        }
+        
+        .prestamo-title {
+            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .prestamo-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .prestamo-detail {
+            font-size: 0.9rem;
+        }
+        
+        .prestamo-detail-label {
+            color: #999;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        
+        .prestamo-detail-value {
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+        
+        .status-activo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-vencido {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-devuelto {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .no-prestamos {
+            background: white;
+            padding: 3rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .no-prestamos h3 {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .no-prestamos a {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.8rem 2rem;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .no-prestamos a:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🏛️ Biblioteca</h1>
+        <nav>
+            <a href="/">Hola</a>
+            <a href="/libros">Catálogo</a>
+            <a href="/mis-prestamos">Mis Préstamos</a>
+            <a href="/mis-reservas">Mis Reservas</a>
+            {% if user %}
+                <a href="/logout">Salir</a>
+            {% else %}
+                <a href="/login">Login</a>
+            {% endif %}
+        </nav>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h2>📖 Mis Préstamos</h2>
+            <p>Gestiona tus préstamos activos</p>
+        </div>
+        
+        {% if prestamos and prestamos|length > 0 %}
+        <div class="prestamos-list">
+            {% for prestamo in prestamos %}
+            <div class="prestamo-item">
+                <div class="prestamo-title">{{ prestamo.libro_titulo or 'Libro ID: ' + prestamo.libro_id }}</div>
+                
+                <div class="prestamo-details">
+                    <div class="prestamo-detail">
+                        <span class="prestamo-detail-label">Usuario:</span>
+                        <span class="prestamo-detail-value">{{ prestamo.usuario_id }}</span>
+                    </div>
+                    <div class="prestamo-detail">
+                        <span class="prestamo-detail-label">Fecha de préstamo:</span>
+                        <span class="prestamo-detail-value">{{ prestamo.fecha_prestamo }}</span>
+                    </div>
+                    <div class="prestamo-detail">
+                        <span class="prestamo-detail-label">Fecha de devolución:</span>
+                        <span class="prestamo-detail-value">{{ prestamo.fecha_devolucion }}</span>
+                    </div>
+                    <div class="prestamo-detail">
+                        <span class="prestamo-detail-label">Estado:</span>
+                        <span class="status-badge status-{{ prestamo.estado }}">{{ prestamo.estado }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-prestamos">
+            <h3>📭 No tienes préstamos activos</h3>
+            <p>Explora nuestro catálogo y solicita un libro.</p>
+            <a href="/libros">Ver Catálogo</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
