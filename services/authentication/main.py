@@ -16,7 +16,7 @@ import os
 # ==================== CONFIGURACIÓN ====================
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = os.getenv("AUTH_DATABASE_URL", "postgresql://postgres:postgres@postgres_auth:5432/auth_db")
+    DATABASE_URL: str = os.getenv("AUTH_DATABASE_URL", "postgresql://postgres:postgres@postgres_authentication:5432/authentication_db")
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
@@ -95,6 +95,23 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    is_active: Optional[bool] = None
+    roles: Optional[List[UserRole]] = None
+
+class UserListResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    full_name: str
+    is_active: bool
+    roles: List[str]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -134,6 +151,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise credentials_exception
     return user
+
+def is_admin(user: dict) -> bool:
+    """Verificar si el usuario es administrador"""
+    return "administrador" in user.get("roles", [])
 
 # ==================== CRUD ====================
 
@@ -189,11 +210,21 @@ def startup():
     try:
         admin = db.query(User).filter(User.username == "admin").first()
         if not admin:
+            # Crear roles primero
+            for role_enum in UserRole:
+                role = db.query(Role).filter(Role.name == role_enum.value).first()
+                if not role:
+                    role = Role(name=role_enum.value)
+                    db.add(role)
+            db.commit()
+            
+            # Crear admin con rol de administrador
             admin_data = UserCreate(
                 username="admin",
                 email="admin@biblioteca.com",
                 password="Admin123!",
-                full_name="Administrador del Sistema"  # ← Agregar esta línea
+                full_name="Administrador del Sistema",
+                roles=[UserRole.ADMINISTRADOR]
             )
             create_user(db, admin_data)
     finally:
@@ -223,7 +254,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     created_user = create_user(db, user)
     
     # Convertir roles de objetos a strings
-    role_names = [role.name for role in created_user.roles]
+    role_names = [role.name.value for role in created_user.roles]
     
     # Retornar con roles como strings
     return {
@@ -232,7 +263,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         "email": created_user.email,
         "full_name": created_user.full_name,
         "is_active": created_user.is_active,
-        "roles": role_names  # ← Convertir objetos Role a strings
+        "roles": role_names
     }
 
 @app.post("/login", response_model=Token)
@@ -253,12 +284,30 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @app.get("/users/me", response_model=UserResponse)
 def get_current_user_info(current_user: User = Depends(get_current_user)):
-    return current_user
+    role_names = [role.name.value for role in current_user.roles]
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "is_active": current_user.is_active,
+        "roles": role_names
+    }
 
 @app.get("/users", response_model=List[UserResponse])
 def list_users(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     users = db.query(User).all()
-    return users
+    result = []
+    for user in users:
+        result.append({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "is_active": user.is_active,
+            "roles": [role.name.value for role in user.roles]
+        })
+    return result
 
 @app.post("/verify")
 def verify_token(token: str, db: Session = Depends(get_db)):
@@ -279,6 +328,143 @@ def verify_token(token: str, db: Session = Depends(get_db)):
         }
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+# ==================== ENDPOINTS DE ADMINISTRACIÓN ====================
+
+@app.get("/admin/users", response_model=List[UserListResponse])
+async def listar_usuarios(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    #Listar todos los usuarios (solo admins)
+    user_roles = [role.name.value for role in current_user.roles]
+    if "administrador" not in user_roles:
+        raise HTTPException(status_code=403, detail="No tiene permisos de administrador")
+    
+    users = db.query(User).all()
+    result = []
+    
+    for user in users:
+        result.append({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "is_active": user.is_active,
+            "roles": [role.name.value for role in user.roles],
+            "created_at": user.created_at
+        })
+    
+    return result
+
+@app.get("/admin/users/{user_id}", response_model=UserListResponse)
+async def obtener_usuario(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    #Obtener información de un usuario específico (solo admins)
+    user_roles = [role.name.value for role in current_user.roles]
+    if "administrador" not in user_roles:
+        raise HTTPException(status_code=403, detail="No tiene permisos de administrador")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "full_name": user.full_name,
+        "is_active": user.is_active,
+        "roles": [role.name.value for role in user.roles],
+        "created_at": user.created_at
+    }
+
+@app.put("/admin/users/{user_id}", response_model=UserListResponse)
+async def actualizar_usuario(
+    user_id: int,
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    #Actualizar información de un usuario (solo admins)
+    user_roles = [role.name.value for role in current_user.roles]
+    if "administrador" not in user_roles:
+        raise HTTPException(status_code=403, detail="No tiene permisos de administrador")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # Actualizar campos básicos
+    if user_update.full_name is not None:
+        user.full_name = user_update.full_name
+    
+    if user_update.is_active is not None:
+        user.is_active = user_update.is_active
+    
+    # Actualizar roles
+    if user_update.roles is not None:
+        # Limpiar roles actuales
+        user.roles.clear()
+        
+        # Agregar nuevos roles
+        for role_name in user_update.roles:
+            role = db.query(Role).filter(Role.name == role_name.value).first()
+            if not role:
+                # Crear el rol si no existe
+                role = Role(name=role_name.value)
+                db.add(role)
+                db.flush()
+            user.roles.append(role)
+    
+    db.commit()
+    db.refresh(user)
+    
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "full_name": user.full_name,
+        "is_active": user.is_active,
+        "roles": [role.name.value for role in user.roles],
+        "created_at": user.created_at
+    }
+
+@app.delete("/admin/users/{user_id}")
+async def eliminar_usuario(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Eliminar un usuario (solo admins)"""
+    user_roles = [role.name.value for role in current_user.roles]
+    if "administrador" not in user_roles:
+        raise HTTPException(status_code=403, detail="No tiene permisos de administrador")
+    
+    # No permitir que el admin se elimine a sí mismo
+    if user_id == current_user.id:
+        raise HTTPException(status_code=400, detail="No puedes eliminarte a ti mismo")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    db.delete(user)
+    db.commit()
+    
+    return {"message": "Usuario eliminado exitosamente"}
+
+@app.get("/roles")
+def obtener_roles():
+    """Obtener lista de roles disponibles"""
+    return [
+        {"value": "estudiante", "label": "Estudiante"},
+        {"value": "profesor", "label": "Profesor"},
+        {"value": "administrador", "label": "Administrador"}
+    ]
 
 if __name__ == "__main__":
     import uvicorn

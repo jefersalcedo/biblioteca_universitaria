@@ -16,12 +16,32 @@ def get_auth_header():
         return {"Authorization": f"Bearer {token}"}
     return {}
 
+def get_user_info():
+    """Obtiene información completa del usuario desde el servicio de autenticación"""
+    if "access_token" not in session:
+        return None
+    
+    try:
+        response = requests.get(
+            "http://authentication:8001/users/me",
+            headers=get_auth_header(),
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+    except:
+        pass
+    
+    return session.get("user")
+
 # ==================== ROUTES ====================
 
 @app.route("/")
 def index():
     """Página principal"""
-    return render_template("index.html", user=session.get("user"))
+    user_info = get_user_info()
+    return render_template("index.html", user=user_info)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -44,11 +64,10 @@ def login():
                 session["access_token"] = data["access_token"]
                 session["token_type"] = data.get("token_type", "bearer")
                 
-                # Guardar información básica del usuario
-                session["user"] = {
-                    "username": username,
-                    "is_authenticated": True
-                }
+                # Obtener información completa del usuario
+                user_info = get_user_info()
+                if user_info:
+                    session["user"] = user_info
                 
                 flash("¡Bienvenido!", "success")
                 return redirect(url_for("index"))
@@ -106,6 +125,7 @@ def logout():
 @app.route("/libros")
 def libros():
     """Lista de libros del catálogo"""
+    libros_data = []
     try:
         response = requests.get(
             "http://catalogo:8002/libros",
@@ -114,12 +134,14 @@ def libros():
         
         if response.status_code == 200:
             libros_data = response.json()
-            return render_template("libros.html", libros=libros_data, user=session.get("user"))
+        else:
+            app.logger.warning(f"Error del servicio de catálogo: {response.status_code}")
+            flash("Error al cargar el catálogo", "error")
     except Exception as e:
         app.logger.error(f"Error al cargar libros: {str(e)}")
+        flash("Error al conectar con el servicio de catálogo", "error")
     
-    flash("Error al cargar libros", "error")
-    return redirect(url_for("index"))
+    return render_template("libros.html", libros=libros_data, user=get_user_info())
 
 @app.route("/mis-prestamos")
 def mis_prestamos():
@@ -143,9 +165,7 @@ def mis_prestamos():
     except Exception as e:
         app.logger.error(f"Error al cargar préstamos: {str(e)}")
     
-    # Siempre mostrar la página, aunque esté vacía
-    return render_template("prestamos.html", prestamos=prestamos_data, user=session.get("user"))
-
+    return render_template("prestamos.html", prestamos=prestamos_data, user=get_user_info())
 
 @app.route("/mis-reservas")
 def mis_reservas():
@@ -169,8 +189,147 @@ def mis_reservas():
     except Exception as e:
         app.logger.error(f"Error al cargar reservas: {str(e)}")
     
-    # Siempre mostrar la página, aunque esté vacía
-    return render_template("reservas.html", reservas=reservas_data, user=session.get("user"))
+    return render_template("reservas.html", reservas=reservas_data, user=get_user_info())
+
+# ==================== PANEL DE ADMINISTRACIÓN ====================
+
+@app.route("/admin")
+def admin_panel():
+    """Panel de administración"""
+    if "access_token" not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for("login"))
+    
+    # Verificar que el usuario sea admin
+    user = get_user_info()
+    if not user or "administrador" not in user.get("roles", []):
+        flash("No tienes permisos de administrador", "error")
+        return redirect(url_for("index"))
+    
+    usuarios_data = []
+    try:
+        response = requests.get(
+            "http://authentication:8001/admin/users",
+            headers=get_auth_header(),
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            usuarios_data = response.json()
+        else:
+            app.logger.warning(f"Error al cargar usuarios: {response.status_code}")
+            flash("Error al cargar usuarios", "error")
+    except Exception as e:
+        app.logger.error(f"Error al cargar usuarios: {str(e)}")
+        flash("Error al conectar con el servicio de autenticación", "error")
+    
+    return render_template("admin.html", usuarios=usuarios_data, user=user)
+
+@app.route("/admin/usuario/<int:user_id>/editar", methods=["GET", "POST"])
+def editar_usuario(user_id):
+    """Editar usuario"""
+    if "access_token" not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for("login"))
+    
+    # Verificar que el usuario sea admin
+    user = get_user_info()
+    if not user or "administrador" not in user.get("roles", []):
+        flash("No tienes permisos de administrador", "error")
+        return redirect(url_for("index"))
+    
+    if request.method == "POST":
+        # Obtener datos del formulario
+        roles_seleccionados = request.form.getlist("roles")
+        is_active = request.form.get("is_active") == "on"
+        full_name = request.form.get("full_name")
+        
+        data = {
+            "full_name": full_name,
+            "is_active": is_active,
+            "roles": roles_seleccionados
+        }
+        
+        try:
+            response = requests.put(
+                f"http://authentication:8001/admin/users/{user_id}",
+                headers=get_auth_header(),
+                json=data,
+                timeout=5
+            )
+            
+            if response.status_code == 200:
+                flash("Usuario actualizado exitosamente", "success")
+                return redirect(url_for("admin_panel"))
+            else:
+                error_msg = response.json().get("detail", "Error al actualizar usuario")
+                flash(error_msg, "error")
+        except Exception as e:
+            app.logger.error(f"Error al actualizar usuario: {str(e)}")
+            flash("Error al actualizar usuario", "error")
+    
+    # GET - Obtener datos del usuario
+    try:
+        response = requests.get(
+            f"http://authentication:8001/admin/users/{user_id}",
+            headers=get_auth_header(),
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            usuario_data = response.json()
+        else:
+            flash("Usuario no encontrado", "error")
+            return redirect(url_for("admin_panel"))
+    except Exception as e:
+        app.logger.error(f"Error al obtener usuario: {str(e)}")
+        flash("Error al cargar usuario", "error")
+        return redirect(url_for("admin_panel"))
+    
+    # Obtener roles disponibles
+    roles_disponibles = [
+        {"value": "estudiante", "label": "Estudiante"},
+        {"value": "profesor", "label": "Profesor"},
+        {"value": "administrador", "label": "Administrador"}
+    ]
+    
+    return render_template(
+        "admin_editar.html", 
+        usuario=usuario_data, 
+        roles_disponibles=roles_disponibles,
+        user=user
+    )
+
+@app.route("/admin/usuario/<int:user_id>/eliminar", methods=["POST"])
+def eliminar_usuario(user_id):
+    """Eliminar usuario"""
+    if "access_token" not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for("login"))
+    
+    # Verificar que el usuario sea admin
+    user = get_user_info()
+    if not user or "administrador" not in user.get("roles", []):
+        flash("No tienes permisos de administrador", "error")
+        return redirect(url_for("index"))
+    
+    try:
+        response = requests.delete(
+            f"http://authentication:8001/admin/users/{user_id}",
+            headers=get_auth_header(),
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            flash("Usuario eliminado exitosamente", "success")
+        else:
+            error_msg = response.json().get("detail", "Error al eliminar usuario")
+            flash(error_msg, "error")
+    except Exception as e:
+        app.logger.error(f"Error al eliminar usuario: {str(e)}")
+        flash("Error al eliminar usuario", "error")
+    
+    return redirect(url_for("admin_panel"))
 
 @app.route("/health")
 def health():

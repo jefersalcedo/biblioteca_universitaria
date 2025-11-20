@@ -2,16 +2,31 @@
 
 {% block content %}
 <div class="jumbotron text-center py-5">
-    <h1 class="display-4">Bienvenido a la Biblioteca Universitaria</h1>
+    <h1 class="display-4">Bienvenido PIGBU Biblioteca Universitaria</h1>
     <p class="lead">Sistema de gestión de préstamos y reservas</p>
     <hr class="my-4">
     {% if user %}
         <p>¡Hola {{ user.full_name }}! Explora nuestro catálogo</p>
-        <a class="btn btn-primary btn-lg" href="/libros" role="button">Ver Catálogo</a>
+        <div class="d-flex justify-content-center gap-3">
+            <a class="btn btn-primary btn-lg" href="/libros" role="button">📚 Ver Catálogo</a>
+            <a class="btn btn-info btn-lg" href="/mis-prestamos" role="button">📖 Mis Préstamos</a>
+            <a class="btn btn-secondary btn-lg" href="/mis-reservas" role="button">🔖 Mis Reservas</a>
+            {% if user and 'administrador' in user.get('roles', []) %}
+                <a class="btn btn-warning btn-lg" href="/admin" role="button">👑 Panel Admin</a>
+            {% endif %}
+        </div>
     {% else %}
         <p>Inicia sesión para acceder a todos los servicios</p>
-        <a class="btn btn-primary btn-lg" href="/login" role="button">Iniciar Sesión</a>
-        <a class="btn btn-secondary btn-lg" href="/register" role="button">Registrarse</a>
+        <div class="d-flex justify-content-center gap-3">
+            <a class="btn btn-primary btn-lg" href="/login" role="button">Iniciar Sesión</a>
+            <a class="btn btn-secondary btn-lg" href="/register" role="button">Registrarse</a>
+        </div>
     {% endif %}
 </div>
+
+{% if user and 'administrador' in user.get('roles', []) %}
+<div class="alert alert-info text-center">
+    <strong>Eres administrador</strong> - Tienes acceso al <a href="/admin" class="alert-link">Panel de Administración</a>
+</div>
+{% endif %}
 {% endblock %}
