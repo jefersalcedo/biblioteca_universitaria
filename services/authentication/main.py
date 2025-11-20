@@ -146,10 +146,18 @@ def create_user(db: Session, user: UserCreate):
         hashed_password=hashed_password
     )
     
+    # Asignar roles por defecto si no se especifican
+    if not user.roles:
+        user.roles = [UserRole.ESTUDIANTE]
+    
     for role_name in user.roles:
-        role = db.query(Role).filter(Role.name == role_name).first()
-        if role:
-            db_user.roles.append(role)
+        role = db.query(Role).filter(Role.name == role_name.value).first()
+        if not role:
+            # Crear el rol si no existe
+            role = Role(name=role_name.value)
+            db.add(role)
+            db.flush()
+        db_user.roles.append(role)
     
     db.add(db_user)
     db.commit()
@@ -197,14 +205,35 @@ def startup():
 def health_check():
     return {"status": "healthy", "service": "Auth Service"}
 
-@app.post("/register", response_model=UserResponse, status_code=201)
+@app.post("/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    # Verificar si existe
-    if get_user_by_username(db, user.username):
-        raise HTTPException(status_code=400, detail="Username already registered")
+    """Registrar un nuevo usuario"""
+    # Verificar si el usuario ya existe
+    existing_user = db.query(User).filter(
+        (User.username == user.username) | (User.email == user.email)
+    ).first()
     
-    db_user = create_user(db, user)
-    return db_user
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="El usuario o email ya existe"
+        )
+    
+    # Crear el usuario
+    created_user = create_user(db, user)
+    
+    # Convertir roles de objetos a strings
+    role_names = [role.name for role in created_user.roles]
+    
+    # Retornar con roles como strings
+    return {
+        "id": created_user.id,
+        "username": created_user.username,
+        "email": created_user.email,
+        "full_name": created_user.full_name,
+        "is_active": created_user.is_active,
+        "roles": role_names  # ← Convertir objetos Role a strings
+    }
 
 @app.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
