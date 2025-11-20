@@ -1,9 +1,9 @@
 # Plantilla del Proyecto del Seminario
 
-| Código | Nombre | Correo |
+| Cedula | Nombre | Correo |
 |:---|:---|:---|
-| 542378923 | Fulanito de Tal | fulanito.tal@miuniremington.edu.co |
-| 542378923 | Fulanito de Tal | fulanito.tal@miuniremington.edu.co |
+| 1085943065 | Jefferson Javier Salcedo Oliva | jefferson.salcedo.3065@miuniremington.edu.co |
+| 1085943065 | Hector Eduardo Betancourth Ibarra | hector.betancourth.5560@miuniremington.edu.co |
 
 ---
 
