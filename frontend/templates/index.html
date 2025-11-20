@@ -8,11 +8,11 @@
     {% if user %}
         <p>¡Hola {{ user.full_name }}! Explora nuestro catálogo</p>
         <div class="d-flex justify-content-center gap-3">
-            <a class="btn btn-primary btn-lg" href="/libros" role="button">📚 Ver Catálogo</a>
-            <a class="btn btn-info btn-lg" href="/mis-prestamos" role="button">📖 Mis Préstamos</a>
-            <a class="btn btn-secondary btn-lg" href="/mis-reservas" role="button">🔖 Mis Reservas</a>
+            <a class="btn btn-primary btn-lg" href="/libros" role="button">Ver Catálogo</a>
+            <a class="btn btn-info btn-lg" href="/mis-prestamos" role="button">Mis Préstamos</a>
+            <a class="btn btn-secondary btn-lg" href="/mis-reservas" role="button">Mis Reservas</a>
             {% if user and 'administrador' in user.get('roles', []) %}
-                <a class="btn btn-warning btn-lg" href="/admin" role="button">👑 Panel Admin</a>
+                <a class="btn btn-warning btn-lg" href="/admin" role="button">Panel Admin</a>
             {% endif %}
         </div>
     {% else %}
