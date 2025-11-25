@@ -1,0 +1,86 @@
+site_name: Sistema PIGBU Biblioteca Universitaria
+site_description: Documentación completa del sistema de gestión de Biblioteca Universitaria con arquitectura de microservicios
+site_author: Jefferson Salcedo y Hector Betancourth
+
+theme:
+  name: material
+  language: es
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a modo oscuro
+    - scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a modo claro
+  
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+nav:
+  - Inicio: index.md
+  - Arquitectura:
+    - Visión General: architecture/overview.md
+  - Microservicios:
+    - Autenticación: microservices/authentication.md
+    - Catalogo: microservices/catalog.md
+    - Préstamos: microservices/loans.md
+    - Reservas: microservices/reservations.md
+  - Guías:
+    - Instalación: guides/installation.md
+
+plugins:
+  - search:
+      lang: es
+  - mermaid2:
+      version: 10.6.1
+  - mkdocstrings:
+      enabled: true
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js

@@ -1,0 +1,6 @@
+mkdocs==1.6.1
+mkdocs-material==9.5.44
+mkdocstrings[python]==0.26.2
+mkdocs-mermaid2-plugin==1.1.1
+pymdown-extensions==10.12
+markdown==3.7
