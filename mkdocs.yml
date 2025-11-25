@@ -1,6 +1,10 @@
 site_name: Sistema PIGBU Biblioteca Universitaria
+site_url: https://jefersalcedo.github.io/biblioteca_universitaria/
 site_description: Documentación completa del sistema de gestión de Biblioteca Universitaria con arquitectura de microservicios
 site_author: Jefferson Salcedo y Hector Betancourth
+
+repo_url: https://github.com/jefersalcedo/biblioteca_universitaria
+repo_name: jefersalcedo/biblioteca_universitaria
 
 theme:
   name: material
