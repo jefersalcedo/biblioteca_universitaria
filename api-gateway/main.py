@@ -1,72 +1,161 @@
-from fastapi import FastAPI, APIRouter, Request, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-import requests
-import os
+from fastapi.responses import JSONResponse
+import httpx
+import json
 
-# Define la instancia de la aplicación FastAPI.
-app = FastAPI(title="API Gateway Taller Microservicios")
+app = FastAPI(title="API Gateway - Biblioteca Universitaria")
 
-# Configura CORS (Cross-Origin Resource Sharing).
-# Esto es esencial para permitir que el frontend se comunique con el gateway.
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite peticiones desde cualquier origen (ajustar en producción)
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Crea un enrutador para las peticiones de los microservicios.
-router = APIRouter(prefix="/api/v1")
-
-# Define los microservicios y sus URLs.
-# La URL debe coincidir con el nombre del servicio definido en docker-compose.yml.
-# El puerto debe ser el del contenedor (ej. auth-service:8001).
+# Configuración de servicios - CORREGIDA
 SERVICES = {
-    "auth": os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001"),
-    # TODO: Agrega los URLs de los otros microservicios de tu tema.
-    # "service1_name": os.getenv("NAME1_SERVICE_URL", "http://service1-service:8002"),
-    # "service2_name": os.getenv("NAME2_SERVICE_URL", "http://service2-service:8003"),
-    # "service3_name": os.getenv("NAME3_SERVICE_URL", "http://service3-service:8004"),
+    "autenticacion": "http://microservicio-autenticacion:8001",
+    "catalogo": "http://microservicio-catalogo:8001",  # Cambiado de 8002 a 8001
+    "prestamos": "http://microservicio-prestamos:8003",
+    "reservas": "http://microservicio-reservas:8004"
 }
 
-# TODO: Implementa una ruta genérica para redirigir peticiones GET.
-@router.get("/{service_name}/{path:path}")
-async def forward_get(service_name: str, path: str, request: Request):
+@app.get("/")
+async def root():
+    return {
+        "message": "API Gateway - Sistema de Biblioteca Universitaria",
+        "services": list(SERVICES.keys())
+    }
+
+@app.api_route("/{service_name}/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_request(service_name: str, path: str, request: Request):
     if service_name not in SERVICES:
-        raise HTTPException(status_code=404, detail=f"Service '{service_name}' not found.")
+        raise HTTPException(status_code=404, detail=f"Servicio {service_name} no encontrado")
     
-    service_url = f"{SERVICES[service_name]}/{path}"
+    # Construir URL destino
+    base_url = SERVICES[service_name]
+    target_url = f"{base_url}/{path}"
     
-    try:
-        response = requests.get(service_url, params=request.query_params)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error forwarding request to {service_name}: {e}")
-
-# TODO: Implementa una ruta genérica para redirigir peticiones POST.
-@router.post("/{service_name}/{path:path}")
-async def forward_post(service_name: str, path: str, request: Request):
-    if service_name not in SERVICES:
-        raise HTTPException(status_code=404, detail=f"Service '{service_name}' not found.")
+    # Headers
+    headers = {key: value for key, value in request.headers.items() 
+               if key.lower() not in ["host", "content-length"]}
     
-    service_url = f"{SERVICES[service_name]}/{path}"
+    # Body
+    body = None
+    if request.method in ["POST", "PUT", "PATCH"]:
+        body = await request.body()
     
-    try:
-        # Pasa los datos JSON del cuerpo de la petición.
-        response = requests.post(service_url, json=await request.json())
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error forwarding request to {service_name}: {e}")
+    # Realizar petición
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.request(
+                method=request.method,
+                url=target_url,
+                headers=headers,
+                content=body,
+                params=request.query_params,
+                timeout=30.0
+            )
+            
+            # Manejar diferentes tipos de respuesta
+            if response.status_code == 204:  # No Content
+                return JSONResponse(content={}, status_code=response.status_code)
+            
+            try:
+                response_data = response.json()
+                return JSONResponse(content=response_data, status_code=response.status_code)
+            except json.JSONDecodeError:
+                # Si no es JSON, devolver el texto
+                return JSONResponse(
+                    content={"detail": response.text},
+                    status_code=response.status_code
+                )
+                
+        except httpx.ConnectError:
+            raise HTTPException(
+                status_code=503, 
+                detail=f"Servicio {service_name} no disponible. No se puede conectar."
+            )
+        except httpx.TimeoutException:
+            raise HTTPException(
+                status_code=504, 
+                detail=f"Timeout en servicio {service_name}. El servicio no respondió a tiempo."
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Error interno del gateway: {str(e)}"
+            )
 
-# TODO: Agrega más rutas para otros métodos HTTP (PUT, DELETE, etc.).
-
-# Incluye el router en la aplicación principal.
-app.include_router(router)
-
-# Endpoint de salud para verificar el estado del gateway.
 @app.get("/health")
-def health_check():
-    return {"status": "ok", "message": "API Gateway is running."}
+async def health_check():
+    health_status = {"gateway": "healthy"}
+    
+    async with httpx.AsyncClient() as client:
+        for service_name, url in SERVICES.items():
+            try:
+                response = await client.get(f"{url}/health", timeout=5.0)
+                if response.status_code == 200:
+                    try:
+                        service_data = response.json()
+                        health_status[service_name] = {
+                            "status": "healthy",
+                            "data": service_data
+                        }
+                    except:
+                        health_status[service_name] = {
+                            "status": "healthy",
+                            "data": {"raw_response": response.text}
+                        }
+                else:
+                    health_status[service_name] = {
+                        "status": "unhealthy",
+                        "status_code": response.status_code,
+                        "error": response.text
+                    }
+            except Exception as e:
+                health_status[service_name] = {
+                    "status": "unreachable",
+                    "error": str(e)
+                }
+    
+    return health_status
+
+# Endpoint específico para login que maneja mejor los errores
+@app.post("/autenticacion/login")
+async def login_proxy(request: Request):
+    async with httpx.AsyncClient() as client:
+        try:
+            body = await request.body()
+            response = await client.post(
+                "http://microservicio-autenticacion:8001/login",
+                content=body,
+                headers={"Content-Type": "application/json"},
+                timeout=10.0
+            )
+            
+            if response.status_code == 200:
+                return JSONResponse(content=response.json(), status_code=200)
+            else:
+                return JSONResponse(
+                    content={"detail": "Error de autenticación"},
+                    status_code=response.status_code
+                )
+                
+        except httpx.ConnectError:
+            return JSONResponse(
+                content={"detail": "Servicio de autenticación no disponible"},
+                status_code=503
+            )
+        except Exception as e:
+            return JSONResponse(
+                content={"detail": f"Error interno: {str(e)}"},
+                status_code=500
+            )
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")
