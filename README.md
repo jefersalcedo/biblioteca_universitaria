@@ -1,9 +1,9 @@
 # Plantilla del Proyecto del Seminario
 
-| Código | Nombre | Correo |
+| Cedula | Nombre | Correo |
 |:---|:---|:---|
-| 542378923 | Fulanito de Tal | fulanito.tal@miuniremington.edu.co |
-| 542378923 | Fulanito de Tal | fulanito.tal@miuniremington.edu.co |
+| 1085943065 | Jefferson Javier Salcedo Oliva | jefferson.salcedo.3065@miremington.edu.co |
+| 1192745560 | Hector Eduardo Betancourth Ibarra | hector.betancourth.5560@miremington.edu.co |
 
 ---
 
@@ -70,3 +70,4 @@ docker-compose up --build
 ```
 
 Esto construirá las imágenes y ejecutará todos los contenedores. Podrás acceder al frontend en `http://localhost:5000` y al API Gateway en `http://localhost:8000`.
+
