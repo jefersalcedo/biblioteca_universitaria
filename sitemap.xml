@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://jefersalcedo.github.io/biblioteca_universitaria/</loc>
+         <lastmod>2025-11-25</lastmod>
+    </url>
+    <url>
+         <loc>https://jefersalcedo.github.io/biblioteca_universitaria/architecture/overview/</loc>
+         <lastmod>2025-11-25</lastmod>
+    </url>
+    <url>
+         <loc>https://jefersalcedo.github.io/biblioteca_universitaria/guides/installation/</loc>
+         <lastmod>2025-11-25</lastmod>
+    </url>
+    <url>
+         <loc>https://jefersalcedo.github.io/biblioteca_universitaria/microservices/authentication/</loc>
+         <lastmod>2025-11-25</lastmod>
+    </url>
+    <url>
+         <loc>https://jefersalcedo.github.io/biblioteca_universitaria/microservices/catalog/</loc>
+         <lastmod>2025-11-25</lastmod>
+    </url>
+    <url>
+         <loc>https://jefersalcedo.github.io/biblioteca_universitaria/microservices/loans/</loc>
+         <lastmod>2025-11-25</lastmod>
+    </url>
+    <url>
+         <loc>https://jefersalcedo.github.io/biblioteca_universitaria/microservices/reservations/</loc>
+         <lastmod>2025-11-25</lastmod>
+    </url>
+</urlset>

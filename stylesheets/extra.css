@@ -1,0 +1,549 @@
+/* ============================================
+   VARIABLES DE COLOR - PALETA PIGBU
+   ============================================ */
+:root {
+  /* Colores principales del dashboard */
+  --primary-color: #16a085;      /* Verde turquesa principal */
+  --primary-dark: #138d75;       /* Verde más oscuro */
+  --primary-light: #1abc9c;      /* Verde más claro */
+  --accent-color: #48c9b0;       /* Acento verde claro */
+  --secondary-color: #0d7a66;    /* Verde oscuro para contraste */
+  
+  /* Colores de texto */
+  --text-primary: #2c3e50;
+  --text-secondary: #5d6d7e;
+  --text-light: #ecf0f1;
+  
+  /* Fondos */
+  --bg-light: #e8f8f5;           /* Fondo claro con tinte verde */
+  --bg-white: #ffffff;
+  --bg-card: #f8fffe;
+  
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(22, 160, 133, 0.1);
+  --shadow-md: 0 4px 16px rgba(22, 160, 133, 0.15);
+  --shadow-lg: 0 8px 24px rgba(22, 160, 133, 0.2);
+}
+
+/* Modo oscuro */
+[data-md-color-scheme="slate"] {
+  --primary-color: #1abc9c;
+  --primary-dark: #16a085;
+  --primary-light: #48c9b0;
+  --accent-color: #5ddbbc;
+  --text-primary: #ecf0f1;
+  --text-secondary: #bdc3c7;
+  --bg-light: #1a2332;
+  --bg-card: #212d3d;
+}
+
+/* ============================================
+   TIPOGRAFÍA Y HEADINGS
+   ============================================ */
+.md-typeset h1 {
+  color: var(--primary-color);
+  font-weight: 700;
+  border-bottom: 3px solid var(--primary-color);
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+}
+
+.md-typeset h2 {
+  color: var(--primary-dark);
+  border-bottom: 2px solid var(--accent-color);
+  padding-bottom: 0.3rem;
+  margin-top: 1.5rem;
+}
+
+.md-typeset h3 {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.md-typeset h4 {
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+/* Modo oscuro - Headings */
+[data-md-color-scheme="slate"] .md-typeset h1,
+[data-md-color-scheme="slate"] .md-typeset h2,
+[data-md-color-scheme="slate"] .md-typeset h3 {
+  color: var(--primary-light);
+}
+
+[data-md-color-scheme="slate"] .md-typeset h4 {
+  color: var(--accent-color);
+}
+
+/* ============================================
+   TABLAS
+   ============================================ */
+.md-typeset table {
+  box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.md-typeset table thead {
+  background: linear-gradient(135deg, #16a085, #1abc9c);
+  color: white;
+}
+
+.md-typeset table thead th {
+  color: white !important;
+  font-weight: 600;
+  padding: 1rem;
+  border: none;
+}
+
+.md-typeset table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.md-typeset table tbody tr:hover {
+  background-color: var(--bg-light);
+}
+
+.md-typeset table tbody td {
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(22, 160, 133, 0.1);
+}
+
+/* Modo oscuro - Tablas */
+[data-md-color-scheme="slate"] .md-typeset table tbody tr:hover {
+  background-color: rgba(26, 188, 156, 0.1);
+}
+
+[data-md-color-scheme="slate"] .md-typeset table tbody td {
+  border-bottom: 1px solid rgba(26, 188, 156, 0.2);
+}
+
+/* ============================================
+   ENLACES
+   ============================================ */
+.md-typeset a {
+  color: var(--primary-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.md-typeset a:hover {
+  color: var(--primary-dark);
+  border-bottom: 1px solid var(--primary-color);
+}
+
+[data-md-color-scheme="slate"] .md-typeset a {
+  color: var(--accent-color);
+}
+
+[data-md-color-scheme="slate"] .md-typeset a:hover {
+  color: var(--primary-light);
+  border-bottom: 1px solid var(--accent-color);
+}
+
+/* ============================================
+   BLOQUES DE CÓDIGO
+   ============================================ */
+.md-typeset code {
+  background-color: var(--bg-light);
+  color: var(--primary-dark);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  border: 1px solid rgba(22, 160, 133, 0.2);
+}
+
+.md-typeset pre {
+  background-color: #f8f9fa !important;
+  border-left: 4px solid var(--primary-color);
+  border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+}
+
+[data-md-color-scheme="slate"] .md-typeset code {
+  background-color: rgba(26, 188, 156, 0.1);
+  color: var(--accent-color);
+  border: 1px solid rgba(26, 188, 156, 0.3);
+}
+
+/* ============================================
+   ADMONITIONS (Cajas de información)
+   ============================================ */
+.md-typeset .admonition {
+  border-left: 4px solid var(--primary-color);
+  box-shadow: var(--shadow-sm);
+  border-radius: 4px;
+}
+
+.md-typeset .admonition.note {
+  border-left-color: #16a085;
+}
+
+.md-typeset .admonition.tip {
+  border-left-color: #1abc9c;
+}
+
+.md-typeset .admonition.success {
+  border-left-color: #27ae60;
+}
+
+.md-typeset .admonition.warning {
+  border-left-color: #f39c12;
+}
+
+.md-typeset .admonition.danger {
+  border-left-color: #e74c3c;
+}
+
+/* ============================================
+   BOTONES Y BADGES
+   ============================================ */
+.md-button {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.md-button:hover {
+  background-color: var(--primary-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.md-button--primary {
+  background: linear-gradient(135deg, #16a085, #1abc9c);
+}
+
+/* ============================================
+   DIAGRAMAS MERMAID - TAMAÑO Y LEGIBILIDAD
+   ============================================ */
+
+/* Contenedor del diagrama */
+.md-typeset .mermaid {
+  font-size: 16px !important;
+  transform: scale(1.15);
+  transform-origin: top center;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  overflow-x: auto;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Modo oscuro - Fondo diagrama */
+[data-md-color-scheme="slate"] .md-typeset .mermaid {
+  background: #1e2936;
+}
+
+/* Hover effect */
+.md-typeset .mermaid:hover {
+  transform: scale(1.18);
+  box-shadow: var(--shadow-lg);
+}
+
+/* SVG responsive */
+.mermaid svg {
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 500px;
+}
+
+/* Texto en diagramas - MODO CLARO */
+.mermaid .nodeLabel,
+.mermaid .edgeLabel,
+.mermaid text {
+  font-size: 14px !important;
+  font-weight: 500;
+  fill: #2c3e50 !important;
+}
+
+.mermaid .label {
+  color: #2c3e50 !important;
+}
+
+/* Texto en diagramas - MODO OSCURO */
+[data-md-color-scheme="slate"] .mermaid .nodeLabel,
+[data-md-color-scheme="slate"] .mermaid .edgeLabel,
+[data-md-color-scheme="slate"] .mermaid text,
+[data-md-color-scheme="slate"] .mermaid .label {
+  fill: #ecf0f1 !important;
+  color: #ecf0f1 !important;
+}
+
+/* Nodos y formas - mejor visibilidad */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node polygon {
+  stroke-width: 2px !important;
+  stroke: #16a085 !important;
+}
+
+/* Colores de nodos por tipo - MODO CLARO */
+.mermaid .node.primary rect {
+  fill: #e8f8f5 !important;
+  stroke: #16a085 !important;
+}
+
+.mermaid .node.secondary rect {
+  fill: #d5f4e6 !important;
+  stroke: #1abc9c !important;
+}
+
+/* Colores de nodos - MODO OSCURO */
+[data-md-color-scheme="slate"] .mermaid .node rect {
+  fill: #2a3f54 !important;
+  stroke: #1abc9c !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .node circle {
+  fill: #2a3f54 !important;
+  stroke: #48c9b0 !important;
+}
+
+/* Líneas y flechas */
+.mermaid .edgePath .path,
+.mermaid .flowchart-link {
+  stroke: #16a085 !important;
+  stroke-width: 2px !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .edgePath .path,
+[data-md-color-scheme="slate"] .mermaid .flowchart-link {
+  stroke: #48c9b0 !important;
+}
+
+/* Etiquetas de relaciones */
+.mermaid .relationshipLabel {
+  fill: #2c3e50 !important;
+  background-color: white !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .relationshipLabel {
+  fill: #ecf0f1 !important;
+  background-color: #1e2936 !important;
+}
+
+/* Diagramas de secuencia */
+.mermaid .actor {
+  fill: #e8f8f5 !important;
+  stroke: #16a085 !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .actor {
+  fill: #2a3f54 !important;
+  stroke: #1abc9c !important;
+}
+
+.mermaid .activation0,
+.mermaid .activation1,
+.mermaid .activation2 {
+  fill: #d5f4e6 !important;
+  stroke: #16a085 !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .activation0,
+[data-md-color-scheme="slate"] .mermaid .activation1,
+[data-md-color-scheme="slate"] .mermaid .activation2 {
+  fill: #2a3f54 !important;
+  stroke: #48c9b0 !important;
+}
+
+/* Líneas de mensajes */
+.mermaid .messageLine0,
+.mermaid .messageLine1 {
+  stroke: #16a085 !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .messageLine0,
+[data-md-color-scheme="slate"] .mermaid .messageLine1 {
+  stroke: #48c9b0 !important;
+}
+
+/* Diagramas ER */
+.mermaid .er.entityBox {
+  fill: #e8f8f5 !important;
+  stroke: #16a085 !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .er.entityBox {
+  fill: #2a3f54 !important;
+  stroke: #1abc9c !important;
+}
+
+.mermaid .er.relationshipLine {
+  stroke: #16a085 !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .er.relationshipLine {
+  stroke: #48c9b0 !important;
+}
+
+/* Diagramas de flujo más grandes */
+.mermaid .flowchart-v2 {
+  transform: scale(1.05);
+}
+
+/* Diagramas de secuencia más grandes */
+.mermaid .sequenceDiagram {
+  transform: scale(1.05);
+}
+
+/* Diagramas ER más grandes */
+.mermaid .er {
+  transform: scale(1.05);
+}
+
+/* ============================================
+   ANCHO DEL CONTENIDO
+   ============================================ */
+.md-content__inner {
+  max-width: 1400px !important;
+}
+
+/* ============================================
+   NAVEGACIÓN Y SIDEBAR
+   ============================================ */
+.md-nav__link--active {
+  color: var(--primary-color) !important;
+  font-weight: 600;
+}
+
+.md-nav__link:hover {
+  color: var(--primary-light) !important;
+}
+
+/* ============================================
+   SEARCH BAR
+   ============================================ */
+.md-search__input {
+  border: 2px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.md-search__input:focus {
+  border-color: var(--primary-color);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.md-footer {
+  background: linear-gradient(135deg, #16a085, #1abc9c);
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZADA
+   ============================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-light);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+[data-md-color-scheme="slate"] ::-webkit-scrollbar-track {
+  background: #1a2332;
+}
+
+[data-md-color-scheme="slate"] ::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+}
+
+/* ============================================
+   TABS
+   ============================================ */
+.tabbed-set {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.tabbed-labels > label {
+  color: var(--primary-color);
+  border-bottom: 2px solid transparent;
+}
+
+.tabbed-labels > label:hover {
+  background-color: var(--bg-light);
+}
+
+input:checked + .tabbed-labels > label {
+  border-bottom-color: var(--primary-color);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.md-content {
+  animation: fadeIn 0.5s ease;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .mermaid {
+    transform: scale(0.85);
+    padding: 1rem;
+  }
+  
+  .md-typeset h1 {
+    font-size: 1.8rem;
+  }
+  
+  .md-typeset h2 {
+    font-size: 1.4rem;
+  }
+}
+
+/* ============================================
+   IMPRESIÓN
+   ============================================ */
+@media print {
+  .mermaid {
+    transform: scale(1);
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+  
+  .md-typeset table {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}

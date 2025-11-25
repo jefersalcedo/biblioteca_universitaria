@@ -1,0 +1,964 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="Documentación completa del sistema de gestión de Biblioteca Universitaria con arquitectura de microservicios" name="description"/>
+<meta content="Jefferson Salcedo y Hector Betancourth" name="author"/>
+<link href="https://jefersalcedo.github.io/biblioteca_universitaria/architecture/overview/" rel="canonical"/>
+<link href="../.." rel="prev"/>
+<link href="../../microservices/authentication/" rel="next"/>
+<link href="../../assets/images/favicon.png" rel="icon"/>
+<meta content="mkdocs-1.6.1, mkdocs-material-9.5.44" name="generator"/>
+<title>Visión General - Sistema PIGBU Biblioteca Universitaria</title>
+<link href="../../assets/stylesheets/main.0253249f.min.css" rel="stylesheet"/>
+<link href="../../assets/stylesheets/palette.06af60db.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<link href="../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../stylesheets/extra.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+</head>
+<body data-md-color-accent="blue" data-md-color-primary="indigo" data-md-color-scheme="default" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#vision-general-de-la-arquitectura">
+          Saltar a contenido
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+<nav aria-label="Cabecera" class="md-header__inner md-grid">
+<a aria-label="Sistema PIGBU Biblioteca Universitaria" class="md-header__button md-logo" data-md-component="logo" href="../.." title="Sistema PIGBU Biblioteca Universitaria">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            Sistema PIGBU Biblioteca Universitaria
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Visión General
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="Cambiar a modo oscuro" class="md-option" data-md-color-accent="blue" data-md-color-media="" data-md-color-primary="indigo" data-md-color-scheme="default" id="__palette_0" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="Cambiar a modo oscuro">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+</label>
+<input aria-label="Cambiar a modo claro" class="md-option" data-md-color-accent="blue" data-md-color-media="" data-md-color-primary="indigo" data-md-color-scheme="slate" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_0" hidden="" title="Cambiar a modo claro">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+</label>
+</form>
+<script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Búsqueda" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Búsqueda" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+</label>
+<nav aria-label="Buscar" class="md-search__options">
+<button aria-label="Limpiar" class="md-search__icon md-icon" tabindex="-1" title="Limpiar" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+</button>
+</nav>
+<div class="md-search__suggest" data-md-component="search-suggest"></div>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="" tabindex="0">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/jefersalcedo/biblioteca_universitaria" title="Ir al repositorio">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"></path></svg>
+</div>
+<div class="md-source__repository">
+    jefersalcedo/biblioteca_universitaria
+  </div>
+</a>
+</div>
+</nav>
+<nav aria-label="Pestañas" class="md-tabs" data-md-component="tabs">
+<div class="md-grid">
+<ul class="md-tabs__list">
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../..">
+        
+  
+    
+  
+  Inicio
+
+      </a>
+</li>
+<li class="md-tabs__item md-tabs__item--active">
+<a class="md-tabs__link" href="./">
+          
+  
+  Arquitectura
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../microservices/authentication/">
+          
+  
+  Microservicios
+
+        </a>
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../guides/installation/">
+          
+  
+  Guías
+
+        </a>
+</li>
+</ul>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navegación" class="md-nav md-nav--primary md-nav--lifted" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Sistema PIGBU Biblioteca Universitaria" class="md-nav__button md-logo" data-md-component="logo" href="../.." title="Sistema PIGBU Biblioteca Universitaria">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"></path></svg>
+</a>
+    Sistema PIGBU Biblioteca Universitaria
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/jefersalcedo/biblioteca_universitaria" title="Ir al repositorio">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"></path></svg>
+</div>
+<div class="md-source__repository">
+    jefersalcedo/biblioteca_universitaria
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../..">
+<span class="md-ellipsis">
+    Inicio
+  </span>
+</a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+<span class="md-ellipsis">
+    Arquitectura
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_2_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_2">
+<span class="md-nav__icon md-icon"></span>
+            Arquitectura
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+<span class="md-ellipsis">
+    Visión General
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./">
+<span class="md-ellipsis">
+    Visión General
+  </span>
+</a>
+<nav aria-label="Tabla de contenidos" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#introduccion">
+<span class="md-ellipsis">
+      Introducción
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#principios-arquitectonicos">
+<span class="md-ellipsis">
+      Principios Arquitectónicos
+    </span>
+</a>
+<nav aria-label="Principios Arquitectónicos" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-separacion-de-responsabilidades">
+<span class="md-ellipsis">
+      1. Separación de Responsabilidades
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-autonomia-de-servicios">
+<span class="md-ellipsis">
+      2. Autonomía de Servicios
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-comunicacion-por-api">
+<span class="md-ellipsis">
+      3. Comunicación por API
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#diagrama-de-arquitectura-completo">
+<span class="md-ellipsis">
+      Diagrama de Arquitectura Completo
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#capas-del-sistema">
+<span class="md-ellipsis">
+      Capas del Sistema
+    </span>
+</a>
+<nav aria-label="Capas del Sistema" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-capa-de-presentacion">
+<span class="md-ellipsis">
+      1. Capa de Presentación
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-capa-de-gateway">
+<span class="md-ellipsis">
+      2. Capa de Gateway
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-capa-de-microservicios">
+<span class="md-ellipsis">
+      3. Capa de Microservicios
+    </span>
+</a>
+<nav aria-label="3. Capa de Microservicios" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#servicio-de-autenticacion">
+<span class="md-ellipsis">
+      Servicio de Autenticación
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#servicio-de-catalogo">
+<span class="md-ellipsis">
+      Servicio de Catálogo
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#servicio-de-prestamos">
+<span class="md-ellipsis">
+      Servicio de Préstamos
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#servicio-de-reservas">
+<span class="md-ellipsis">
+      Servicio de Reservas
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-capa-de-datos">
+<span class="md-ellipsis">
+      4. Capa de Datos
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#consideraciones-de-seguridad">
+<span class="md-ellipsis">
+      Consideraciones de Seguridad
+    </span>
+</a>
+<nav aria-label="Consideraciones de Seguridad" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#autenticacion-y-autorizacion">
+<span class="md-ellipsis">
+      Autenticación y Autorización
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#principios-aplicados">
+<span class="md-ellipsis">
+      Principios Aplicados
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#escalabilidad">
+<span class="md-ellipsis">
+      Escalabilidad
+    </span>
+</a>
+<nav aria-label="Escalabilidad" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#estrategias-de-escalado">
+<span class="md-ellipsis">
+      Estrategias de Escalado
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+<span class="md-ellipsis">
+    Microservicios
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_3">
+<span class="md-nav__icon md-icon"></span>
+            Microservicios
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../microservices/authentication/">
+<span class="md-ellipsis">
+    Autenticación
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../microservices/catalog/">
+<span class="md-ellipsis">
+    Catalogo
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../microservices/loans/">
+<span class="md-ellipsis">
+    Préstamos
+  </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../microservices/reservations/">
+<span class="md-ellipsis">
+    Reservas
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle md-toggle--indeterminate" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+<span class="md-ellipsis">
+    Guías
+  </span>
+<span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+            Guías
+          </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../guides/installation/">
+<span class="md-ellipsis">
+    Instalación
+  </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Tabla de contenidos" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#introduccion">
+<span class="md-ellipsis">
+      Introducción
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#principios-arquitectonicos">
+<span class="md-ellipsis">
+      Principios Arquitectónicos
+    </span>
+</a>
+<nav aria-label="Principios Arquitectónicos" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-separacion-de-responsabilidades">
+<span class="md-ellipsis">
+      1. Separación de Responsabilidades
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-autonomia-de-servicios">
+<span class="md-ellipsis">
+      2. Autonomía de Servicios
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-comunicacion-por-api">
+<span class="md-ellipsis">
+      3. Comunicación por API
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#diagrama-de-arquitectura-completo">
+<span class="md-ellipsis">
+      Diagrama de Arquitectura Completo
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#capas-del-sistema">
+<span class="md-ellipsis">
+      Capas del Sistema
+    </span>
+</a>
+<nav aria-label="Capas del Sistema" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-capa-de-presentacion">
+<span class="md-ellipsis">
+      1. Capa de Presentación
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-capa-de-gateway">
+<span class="md-ellipsis">
+      2. Capa de Gateway
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-capa-de-microservicios">
+<span class="md-ellipsis">
+      3. Capa de Microservicios
+    </span>
+</a>
+<nav aria-label="3. Capa de Microservicios" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#servicio-de-autenticacion">
+<span class="md-ellipsis">
+      Servicio de Autenticación
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#servicio-de-catalogo">
+<span class="md-ellipsis">
+      Servicio de Catálogo
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#servicio-de-prestamos">
+<span class="md-ellipsis">
+      Servicio de Préstamos
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#servicio-de-reservas">
+<span class="md-ellipsis">
+      Servicio de Reservas
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-capa-de-datos">
+<span class="md-ellipsis">
+      4. Capa de Datos
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#consideraciones-de-seguridad">
+<span class="md-ellipsis">
+      Consideraciones de Seguridad
+    </span>
+</a>
+<nav aria-label="Consideraciones de Seguridad" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#autenticacion-y-autorizacion">
+<span class="md-ellipsis">
+      Autenticación y Autorización
+    </span>
+</a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#principios-aplicados">
+<span class="md-ellipsis">
+      Principios Aplicados
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#escalabilidad">
+<span class="md-ellipsis">
+      Escalabilidad
+    </span>
+</a>
+<nav aria-label="Escalabilidad" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#estrategias-de-escalado">
+<span class="md-ellipsis">
+      Estrategias de Escalado
+    </span>
+</a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<h1 id="vision-general-de-la-arquitectura">Visión General de la Arquitectura<a class="headerlink" href="#vision-general-de-la-arquitectura" title="Permanent link">¶</a></h1>
+<h2 id="introduccion">Introducción<a class="headerlink" href="#introduccion" title="Permanent link">¶</a></h2>
+<p>El Sistema de PIGBU Biblioteca Universitaria implementa una <strong>arquitectura de microservicios</strong> que divide la aplicación en servicios independientes, cada uno con una responsabilidad específica y bien definida.</p>
+<h2 id="principios-arquitectonicos">Principios Arquitectónicos<a class="headerlink" href="#principios-arquitectonicos" title="Permanent link">¶</a></h2>
+<h3 id="1-separacion-de-responsabilidades">1. Separación de Responsabilidades<a class="headerlink" href="#1-separacion-de-responsabilidades" title="Permanent link">¶</a></h3>
+<p>Cada microservicio tiene una única responsabilidad bien definida:</p>
+<ul>
+<li><strong>Autenticación</strong>: Gestión de usuarios y seguridad</li>
+<li><strong>Catálogo</strong>: Información de libros y recursos</li>
+<li><strong>Préstamos</strong>: Transacciones de préstamo y devolución</li>
+<li><strong>Reservas</strong>: Sistema de reservas y cola de espera</li>
+</ul>
+<h3 id="2-autonomia-de-servicios">2. Autonomía de Servicios<a class="headerlink" href="#2-autonomia-de-servicios" title="Permanent link">¶</a></h3>
+<p>Los servicios son independientes y pueden:</p>
+<ul>
+<li>Desplegarse de forma independiente</li>
+<li>Escalar según necesidad</li>
+<li>Usar diferentes tecnologías</li>
+<li>Tener su propia base de datos</li>
+</ul>
+<h3 id="3-comunicacion-por-api">3. Comunicación por API<a class="headerlink" href="#3-comunicacion-por-api" title="Permanent link">¶</a></h3>
+<p>La comunicación entre componentes se realiza mediante:</p>
+<ul>
+<li><strong>HTTP/REST</strong>: Para comunicación síncrona</li>
+<li><strong>JSON</strong>: Como formato de intercambio de datos</li>
+<li><strong>JWT</strong>: Para autenticación y autorización</li>
+</ul>
+<h2 id="diagrama-de-arquitectura-completo">Diagrama de Arquitectura Completo<a class="headerlink" href="#diagrama-de-arquitectura-completo" title="Permanent link">¶</a></h2>
+<pre class="mermaid"><code>graph TB
+    subgraph "Usuario Final"
+        U[Navegador Web]
+    end
+
+    subgraph "Frontend Layer"
+        FE[Flask Frontend<br/>Puerto 5000]
+    end
+
+    subgraph "API Gateway Layer"
+        GW[API Gateway<br/>Puerto 8000]
+        MW1[Middleware: CORS]
+        MW2[Middleware: Auth]
+        MW3[Middleware: Logging]
+    end
+
+    subgraph "Microservices Layer"
+        AUTH[Auth Service<br/>Puerto 8001]
+        CAT[Catalog Service<br/>Puerto 8002]
+        LOAN[Loans Service<br/>Puerto 8003]
+        RES[Reservations Service<br/>Puerto 8004]
+    end
+
+    subgraph "Data Layer"
+        PG[(PostgreSQL<br/>Puerto 5432)]
+        MONGO[(MongoDB<br/>Puerto 27017)]
+        REDIS[(Redis<br/>Puerto 6379)]
+    end
+
+    subgraph "Container Orchestration"
+        DOCKER[Docker Compose]
+    end
+
+    U --&gt;|HTTPS| FE
+    FE --&gt;|REST API| GW
+    GW --&gt; MW1
+    MW1 --&gt; MW2
+    MW2 --&gt; MW3
+    MW3 --&gt; AUTH
+    MW3 --&gt; CAT
+    MW3 --&gt; LOAN
+    MW3 --&gt; RES
+
+    AUTH ---|SQL| PG
+    LOAN ---|SQL| PG
+    CAT ---|NoSQL| MONGO
+    RES ---|Cache| REDIS
+
+    DOCKER -.-&gt;|Gestiona| FE
+    DOCKER -.-&gt;|Gestiona| GW
+    DOCKER -.-&gt;|Gestiona| AUTH
+    DOCKER -.-&gt;|Gestiona| CAT
+    DOCKER -.-&gt;|Gestiona| LOAN
+    DOCKER -.-&gt;|Gestiona| RES
+    DOCKER -.-&gt;|Gestiona| PG
+    DOCKER -.-&gt;|Gestiona| MONGO
+    DOCKER -.-&gt;|Gestiona| REDIS
+
+    style U fill:#64b5f6
+    style FE fill:#81c784
+    style GW fill:#ffb74d
+    style AUTH fill:#ba68c8
+    style CAT fill:#4db6ac
+    style LOAN fill:#f06292
+    style RES fill:#fff176
+    style PG fill:#90a4ae
+    style MONGO fill:#a1887f
+    style REDIS fill:#ef5350
+</code></pre>
+<h2 id="capas-del-sistema">Capas del Sistema<a class="headerlink" href="#capas-del-sistema" title="Permanent link">¶</a></h2>
+<h3 id="1-capa-de-presentacion">1. Capa de Presentación<a class="headerlink" href="#1-capa-de-presentacion" title="Permanent link">¶</a></h3>
+<p><strong>Frontend con Flask</strong></p>
+<p>Proporciona la interfaz de usuario web:</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-0-1" id="__codelineno-0-1" name="__codelineno-0-1"></a>Frontend
+<a href="#__codelineno-0-2" id="__codelineno-0-2" name="__codelineno-0-2"></a>├── Templates (HTML/Jinja2)
+<a href="#__codelineno-0-3" id="__codelineno-0-3" name="__codelineno-0-3"></a>├── Static Assets (CSS/JS)
+<a href="#__codelineno-0-4" id="__codelineno-0-4" name="__codelineno-0-4"></a>└── Lógica de Presentación
+</code></pre></div>
+<p><strong>Características</strong>:</p>
+<ul>
+<li>Diseño responsivo con CSS moderno</li>
+<li>JavaScript vanilla para interactividad</li>
+<li>Integración con API Gateway</li>
+<li>Manejo de sesiones y tokens</li>
+</ul>
+<h3 id="2-capa-de-gateway">2. Capa de Gateway<a class="headerlink" href="#2-capa-de-gateway" title="Permanent link">¶</a></h3>
+<p><strong>API Gateway</strong></p>
+<p>Punto de entrada único para todas las peticiones:</p>
+<div class="highlight"><pre><span></span><code><a href="#__codelineno-1-1" id="__codelineno-1-1" name="__codelineno-1-1"></a><span class="c1"># Ejemplo de configuración del Gateway</span>
+<a href="#__codelineno-1-2" id="__codelineno-1-2" name="__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+<a href="#__codelineno-1-3" id="__codelineno-1-3" name="__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.middleware.cors</span><span class="w"> </span><span class="kn">import</span> <span class="n">CORSMiddleware</span>
+<a href="#__codelineno-1-4" id="__codelineno-1-4" name="__codelineno-1-4"></a>
+<a href="#__codelineno-1-5" id="__codelineno-1-5" name="__codelineno-1-5"></a><span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<a href="#__codelineno-1-6" id="__codelineno-1-6" name="__codelineno-1-6"></a>
+<a href="#__codelineno-1-7" id="__codelineno-1-7" name="__codelineno-1-7"></a><span class="c1"># Middleware de CORS</span>
+<a href="#__codelineno-1-8" id="__codelineno-1-8" name="__codelineno-1-8"></a><span class="n">app</span><span class="o">.</span><span class="n">add_middleware</span><span class="p">(</span>
+<a href="#__codelineno-1-9" id="__codelineno-1-9" name="__codelineno-1-9"></a>    <span class="n">CORSMiddleware</span><span class="p">,</span>
+<a href="#__codelineno-1-10" id="__codelineno-1-10" name="__codelineno-1-10"></a>    <span class="n">allow_origins</span><span class="o">=</span><span class="p">[</span><span class="s2">"*"</span><span class="p">],</span>
+<a href="#__codelineno-1-11" id="__codelineno-1-11" name="__codelineno-1-11"></a>    <span class="n">allow_credentials</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a href="#__codelineno-1-12" id="__codelineno-1-12" name="__codelineno-1-12"></a>    <span class="n">allow_methods</span><span class="o">=</span><span class="p">[</span><span class="s2">"*"</span><span class="p">],</span>
+<a href="#__codelineno-1-13" id="__codelineno-1-13" name="__codelineno-1-13"></a>    <span class="n">allow_headers</span><span class="o">=</span><span class="p">[</span><span class="s2">"*"</span><span class="p">],</span>
+<a href="#__codelineno-1-14" id="__codelineno-1-14" name="__codelineno-1-14"></a><span class="p">)</span>
+</code></pre></div>
+<p><strong>Responsabilidades</strong>:</p>
+<ul>
+<li>Enrutamiento de peticiones</li>
+<li>Autenticación centralizada</li>
+<li>Rate limiting</li>
+<li>Logging y monitoreo</li>
+<li>Manejo de errores global</li>
+</ul>
+<h3 id="3-capa-de-microservicios">3. Capa de Microservicios<a class="headerlink" href="#3-capa-de-microservicios" title="Permanent link">¶</a></h3>
+<p>Cada microservicio implementa lógica de negocio específica:</p>
+<h4 id="servicio-de-autenticacion">Servicio de Autenticación<a class="headerlink" href="#servicio-de-autenticacion" title="Permanent link">¶</a></h4>
+<pre class="mermaid"><code>sequenceDiagram
+    participant U as Usuario
+    participant GW as API Gateway
+    participant AUTH as Auth Service
+    participant DB as PostgreSQL
+
+    U-&gt;&gt;GW: POST /auth/login
+    GW-&gt;&gt;AUTH: Reenvía petición
+    AUTH-&gt;&gt;DB: Valida credenciales
+    DB--&gt;&gt;AUTH: Usuario encontrado
+    AUTH--&gt;&gt;AUTH: Genera JWT
+    AUTH--&gt;&gt;GW: Token JWT
+    GW--&gt;&gt;U: Token + Info Usuario
+</code></pre>
+<h4 id="servicio-de-catalogo">Servicio de Catálogo<a class="headerlink" href="#servicio-de-catalogo" title="Permanent link">¶</a></h4>
+<pre class="mermaid"><code>sequenceDiagram
+    participant U as Usuario
+    participant GW as API Gateway
+    participant CAT as Catalog Service
+    participant DB as MongoDB
+
+    U-&gt;&gt;GW: GET /catalog/books?search=python
+    GW-&gt;&gt;CAT: Reenvía petición
+    CAT-&gt;&gt;DB: Busca libros
+    DB--&gt;&gt;CAT: Lista de libros
+    CAT--&gt;&gt;GW: JSON con resultados
+    GW--&gt;&gt;U: Respuesta formateada
+</code></pre>
+<h4 id="servicio-de-prestamos">Servicio de Préstamos<a class="headerlink" href="#servicio-de-prestamos" title="Permanent link">¶</a></h4>
+<pre class="mermaid"><code>sequenceDiagram
+    participant U as Usuario
+    participant GW as API Gateway
+    participant LOAN as Loans Service
+    participant DB as PostgreSQL
+    participant CAT as Catalog Service
+
+    U-&gt;&gt;GW: POST /loans/create
+    GW-&gt;&gt;LOAN: Reenvía petición
+    LOAN-&gt;&gt;CAT: Verifica disponibilidad
+    CAT--&gt;&gt;LOAN: Libro disponible
+    LOAN-&gt;&gt;DB: Crea préstamo
+    DB--&gt;&gt;LOAN: Préstamo creado
+    LOAN-&gt;&gt;CAT: Actualiza disponibilidad
+    LOAN--&gt;&gt;GW: Confirmación
+    GW--&gt;&gt;U: Préstamo exitoso
+</code></pre>
+<h4 id="servicio-de-reservas">Servicio de Reservas<a class="headerlink" href="#servicio-de-reservas" title="Permanent link">¶</a></h4>
+<pre class="mermaid"><code>sequenceDiagram
+    participant U as Usuario
+    participant GW as API Gateway
+    participant RES as Reservations Service
+    participant CACHE as Redis
+    participant CAT as Catalog Service
+
+    U-&gt;&gt;GW: POST /reservations/create
+    GW-&gt;&gt;RES: Reenvía petición
+    RES-&gt;&gt;CAT: Verifica disponibilidad
+    CAT--&gt;&gt;RES: No disponible
+    RES-&gt;&gt;CACHE: Añade a cola
+    CACHE--&gt;&gt;RES: Posición en cola
+    RES--&gt;&gt;GW: Reserva confirmada
+    GW--&gt;&gt;U: Número en cola
+</code></pre>
+<h3 id="4-capa-de-datos">4. Capa de Datos<a class="headerlink" href="#4-capa-de-datos" title="Permanent link">¶</a></h3>
+<p>El sistema utiliza múltiples tecnologías de almacenamiento:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio"><input id="__tabbed_1_2" name="__tabbed_1" type="radio"><input id="__tabbed_1_3" name="__tabbed_1" type="radio"><div class="tabbed-labels"><label for="__tabbed_1_1">PostgreSQL</label><label for="__tabbed_1_2">MongoDB</label><label for="__tabbed_1_3">Redis</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>Uso</strong>: Datos transaccionales y relacionales</p>
+<ul>
+<li>Usuarios y autenticación</li>
+<li>Préstamos y devoluciones</li>
+<li>Historial de transacciones</li>
+</ul>
+<p><strong>Ventajas</strong>:
+- Relaciones complejas
+- Integridad referencial</p>
+</div>
+<div class="tabbed-block">
+<p><strong>Uso</strong>: Documentos y datos no estructurados</p>
+<ul>
+<li>Catálogo de libros</li>
+<li>Metadatos bibliográficos</li>
+<li>Búsquedas flexibles</li>
+</ul>
+<p><strong>Ventajas</strong>:
+- Esquema flexible
+- Búsquedas de texto completo
+- Escalabilidad horizontal</p>
+</div>
+<div class="tabbed-block">
+<p><strong>Uso</strong>: Caché y datos temporales</p>
+<ul>
+<li>Cola de reservas</li>
+<li>Sesiones activas</li>
+<li>Caché de consultas</li>
+</ul>
+<p><strong>Ventajas</strong>:
+- Acceso ultra rápido
+- Estructuras de datos avanzadas
+- Expiración automática</p>
+</div>
+</div>
+</input></input></input></div>
+<h2 id="consideraciones-de-seguridad">Consideraciones de Seguridad<a class="headerlink" href="#consideraciones-de-seguridad" title="Permanent link">¶</a></h2>
+<h3 id="autenticacion-y-autorizacion">Autenticación y Autorización<a class="headerlink" href="#autenticacion-y-autorizacion" title="Permanent link">¶</a></h3>
+<pre class="mermaid"><code>graph LR
+    A[Usuario] --&gt;|Credenciales| B[Login]
+    B --&gt;|JWT| C[Token]
+    C --&gt;|Header| D[Request]
+    D --&gt;|Valida| E[Gateway]
+    E --&gt;|OK| F[Microservicio]
+    E --&gt;|Fail| G[401 Unauthorized]
+
+    style C fill:#4caf50
+    style E fill:#ff9800
+    style G fill:#f44336
+</code></pre>
+<h3 id="principios-aplicados">Principios Aplicados<a class="headerlink" href="#principios-aplicados" title="Permanent link">¶</a></h3>
+<ol>
+<li><strong>Autenticación en Gateway</strong>: Validación centralizada de tokens</li>
+<li><strong>JWT con Expiración</strong>: Tokens de corta duración</li>
+<li><strong>HTTPS</strong>: Encriptación de datos en tránsito</li>
+</ol>
+<h2 id="escalabilidad">Escalabilidad<a class="headerlink" href="#escalabilidad" title="Permanent link">¶</a></h2>
+<h3 id="estrategias-de-escalado">Estrategias de Escalado<a class="headerlink" href="#estrategias-de-escalado" title="Permanent link">¶</a></h3>
+<pre class="mermaid"><code>graph TB
+    subgraph "Horizontal Scaling"
+        LB[Load Balancer]
+        MS1[Microservice Instance 1]
+        MS2[Microservice Instance 2]
+        MS3[Microservice Instance 3]
+
+        LB --&gt; MS1
+        LB --&gt; MS2
+        LB --&gt; MS3
+    end
+
+    subgraph "Database Scaling"
+        MASTER[(Master DB)]
+        REPLICA1[(Replica 1)]
+        REPLICA2[(Replica 2)]
+
+        MASTER -.-&gt;|Replication| REPLICA1
+        MASTER -.-&gt;|Replication| REPLICA2
+    end
+
+    MS1 &amp; MS2 &amp; MS3 --&gt; MASTER
+    MS1 &amp; MS2 &amp; MS3 -.-&gt;|Read| REPLICA1 &amp; REPLICA2
+</code></pre>
+<div class="admonition info">
+<p class="admonition-title">Documentación de Microservicios</p>
+<p>Para detalles específicos de cada microservicio, consulta la sección <a href="../../microservices/authentication/">Microservicios</a>.</p>
+</div>
+</article>
+</div>
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+</div>
+<button class="md-top md-icon" data-md-component="top" hidden="" type="button">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Volver al principio
+</button>
+</main>
+<footer class="md-footer">
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+      Material for MkDocs
+    </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "toc.follow", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+<script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
+<script src="../../javascripts/extra.js"></script>
+<script type="module">import mermaid from "https://unpkg.com/mermaid@10.6.1/dist/mermaid.esm.min.mjs";
+window.mermaidConfig = {default: {
+    startOnLoad: false
+}};</script></body>
+</html>
