@@ -1,11 +1,9 @@
-## Link para acceder a la Documentacion en GitHub Pages
+# Link para acceder a la Documentacion en GitHub Pages
 
 En este link puedes visualizar la documentacion del sistema PIGBU Biblioteca Universitaria desarrollada bajo arquitectura de Microservicios 
 
-# GitHub Pages
+## GitHub Pages
 
-    ```bash
+    Link a GitHub Pages https://jefersalcedo.github.io/biblioteca_universitaria/
 
-    https://jefersalcedo.github.io/biblioteca_universitaria/
-
-    ```
+    
