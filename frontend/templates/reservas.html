@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Reservas - PIGBU Biblioteca Universitaria</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-book"></i>
+                <span>PIGBU Biblioteca Universitaria</span>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="/app" class="nav-link">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+                <a href="/catalogo" class="nav-link">
+                    <i class="fas fa-book-open"></i> Catálogo
+                </a>
+                <a href="/prestamos" class="nav-link">
+                    <i class="fas fa-exchange-alt"></i> Préstamos
+                </a>
+                <a href="/reservas" class="nav-link active">
+                    <i class="fas fa-calendar-check"></i> Reservas
+                </a>
+                <div class="nav-user">
+                    <span id="user-name">Usuario</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </button>
+                </div>
+            </div>
+            <!-- Botón para menú móvil -->
+            <div class="nav-toggle" id="nav-toggle" style="display: none;">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-calendar-check"></i> Mis Reservas</h1>
+            <p>Gestiona y revisa tus reservas activas</p>
+        </div>
+
+        <!-- BOTÓN VOLVER AL INICIO AGREGADO -->
+        <div style="margin-bottom: 2rem;">
+            <button class="btn btn-primary" onclick="window.location.href='/app'">
+                <i class="fas fa-arrow-left"></i> Volver al Inicio
+            </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-container">
+            <div class="filter-group">
+                <label for="estado-filter">Filtrar por estado:</label>
+                <select id="estado-filter" onchange="filterReservations()">
+                    <option value="">Todas</option>
+                    <option value="activa">Activas</option>
+                    <option value="cancelada">Canceladas</option>
+                    <option value="vencida">Vencidas</option>
+                    <option value="completada">Completadas</option>
+                </select>
+            </div>
+            <button class="btn btn-secondary" onclick="clearFilters()">
+                <i class="fas fa-times"></i> Limpiar Filtros
+            </button>
+        </div>
+
+        <!-- Contador de resultados -->
+        <div class="results-count">
+            <span id="results-count">Cargando reservas...</span>
+        </div>
+
+        <!-- Grid de Reservas -->
+        <div class="reservations-grid" id="reservations-grid">
+            <div class="loading-text">
+                <i class="fas fa-spinner fa-spin"></i> Cargando reservas...
+            </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div class="notifications-section">
+            <h2><i class="fas fa-bell"></i> Notificaciones Recientes</h2>
+            <div class="notifications-list" id="notifications-list">
+                <div class="loading-text">
+                    <i class="fas fa-spinner fa-spin"></i> Cargando notificaciones...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Procesando...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/reservas.js') }}"></script>
+</body>
+</html>

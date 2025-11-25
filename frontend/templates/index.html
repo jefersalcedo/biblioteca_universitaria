@@ -1,9 +1,151 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIGBU Biblioteca Universitaria</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-book"></i>
+                <span>PIGBU Biblioteca Universitaria</span>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="/app" class="nav-link active">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+                <a href="/catalogo" class="nav-link">
+                    <i class="fas fa-book-open"></i> Catálogo
+                </a>
+                <a href="/prestamos" class="nav-link" >
+                    <i class="fas fa-exchange-alt"></i> Préstamos
+                </a>
+                <a href="/reservas" class="nav-link">
+                    <i class="fas fa-calendar-check"></i> Reservas
+                </a>
+                <div class="nav-user">
+                    <!-- <span id="user-name">Usuario Demo</span>
+                    <span class="user-role" id="user-role">Estudiante</span> -->
+                    <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                    </button>
+                </div>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
 
-{% block content %}
-    <h2>¡Bienvenido al Proyecto del Seminario!</h2>
-    <p>Este es el frontend de tu proyecto. Utiliza el API Gateway para interactuar con los microservicios.</p>
+    <!-- Dashboard Section (Mostrar directamente) -->
+    <section id="dashboard" class="page active">
+        <div class="container">
+            <div class="page-header">
+                <h1>BIBLIOTECA VIRTUAL</h1>
+                <p>Bienvenido al sistema de PIGBU Biblioteca Universitaria</p>
+            </div>
+            
+            <div class="stats-grid" id="stats-grid">
+                <!-- Las estadísticas se cargarán con JavaScript -->
+                <div class="stat-card books">
+                    <i class="fas fa-book"></i>
+                    <h3>Total de Libros</h3>
+                    <div class="number" id="total-libros">0</div>
+                </div>
+                <div class="stat-card loans">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h3>Préstamos Activos</h3>
+                    <div class="number" id="prestamos-activos">0</div>
+                </div>
+                <div class="stat-card reservations">
+                    <i class="fas fa-calendar-check"></i>
+                    <h3>Reservas Activas</h3>
+                    <div class="number" id="reservas-activas">0</div>
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                <h2>Acciones Rápidas</h2>
+                <div class="actions-grid">
+                    <div class="action-card" onclick="showPage('catalogo')">
+                        <i class="fas fa-search"></i>
+                        <h3>Buscar Libros</h3>
+                        <p>Explora nuestro catálogo</p>
+                    </div>
+                    <div class="action-card" onclick="showPage('prestamos')">
+                        <i class="fas fa-exchange-alt"></i>
+                        <h3>Mis Préstamos</h3>
+                        <p>Gestiona tus préstamos</p>
+                    </div>
+                    <div class="action-card" onclick="showPage('reservas')">
+                        <i class="fas fa-calendar-check"></i>
+                        <h3>Mis Reservas</h3>
+                        <p>Revisa tus reservas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <a href="{{ url_for('new_item') }}">Crear un nuevo ítem</a>
+    <!-- Catálogo Section -->
+    <section id="catalogo" class="page">
+        <div class="container">
+            <div class="page-header">
+                <h1>Catálogo de Libros</h1>
+                <p>Explora nuestra colección</p>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Buscar libros por título..." 
+                       onkeyup="filterBooks()">
+                <i class="fas fa-search"></i>
+            </div>
+            
+            <div class="books-grid" id="books-grid">
+                <!-- Los libros se cargarán con JavaScript -->
+            </div>
+        </div>
+    </section>
 
-{% endblock %}
+    <!-- Préstamos Section -->
+    <section id="prestamos" class="page">
+        <div class="container">
+            <div class="page-header">
+                <h1>Mis Préstamos</h1>
+                <p>Gestiona tus préstamos activos</p>
+            </div>
+            
+            <div class="loans-container" id="loans-container">
+                <!-- Los préstamos se cargarán con JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Reservas Section -->
+    <section id="reservas" class="page">
+        <div class="container">
+            <div class="page-header">
+                <h1>Mis Reservas</h1>
+                <p>Revisa y gestiona tus reservas</p>
+            </div>
+            
+            <div class="reservations-container" id="reservations-container">
+                <!-- Las reservas se cargarán con JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

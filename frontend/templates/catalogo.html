@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - PIGBU Biblioteca Universitaria</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-book"></i>
+                <span>PIGBU Biblioteca Universitaria</span>
+            </div>
+            <div class="nav-menu">
+                <a href="/app" class="nav-link">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="/catalogo" class="nav-link active">
+                    <i class="fas fa-book-open"></i> Catálogo
+                </a>
+                <a href="/prestamos" class="nav-link">
+                    <i class="fas fa-exchange-alt"></i> Préstamos
+                </a>
+                <a href="/reservas" class="nav-link">
+                    <i class="fas fa-calendar-check"></i> Reservas
+                </a>
+                <div class="nav-user">
+                    <span id="user-name">Usuario</span>
+                    <span class="user-role" id="user-role">Rol</span>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido del Catálogo -->
+    <div class="container">
+        <div class="page-header">
+            <h1>Catálogo de Libros</h1>
+            <p>Explora nuestra colección de libros</p>
+        </div>
+        
+        <!-- BOTÓN VOLVER AL INICIO AGREGADO -->
+        <div style="margin-bottom: 2rem;">
+            <button class="btn btn-primary" onclick="window.location.href='/app'">
+                <i class="fas fa-arrow-left"></i> Volver al Inicio
+            </button>
+        </div>
+        
+        <!-- Barra de búsqueda -->
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Buscar libros por título, autor o categoría..." 
+                   onkeyup="filterBooks()">
+            <i class="fas fa-search"></i>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="filters-container">
+            <div class="filter-group">
+                <label for="categoria-filter">Categoría:</label>
+                <select id="categoria-filter" onchange="filterBooks()">
+                    <option value="">Todas las categorías</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="autor-filter">Autor:</label>
+                <select id="autor-filter" onchange="filterBooks()">
+                    <option value="">Todos los autores</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> Limpiar filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- Contador de resultados -->
+        <div class="results-info">
+            <span id="results-count">Cargando libros...</span>
+        </div>
+        
+        <!-- Grid de libros -->
+        <div class="books-grid" id="books-grid">
+            <div class="loading-text">Cargando catálogo...</div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/catalogo.js') }}"></script>
+</body>
+</html>

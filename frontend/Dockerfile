@@ -1,19 +1,12 @@
-FROM python:3.12-slim
+FROM python:3.9-alpine
 
-# Establece el directorio de trabajo dentro del contenedor.
 WORKDIR /app
 
-# Copia el archivo de dependencias.
-COPY requirements.txt .
+RUN apk add --no-cache gcc musl-dev
 
-# Instala las dependencias.
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia el resto de los archivos de la aplicación (código, templates, estáticos).
 COPY . .
 
-# Exponemos el puerto en el que la aplicación Flask se ejecutará.
-EXPOSE 5000
-
-# Flask se ejecutará en todas las interfaces de red (0.0.0.0) en el puerto 5000.
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+CMD ["python", "app.py"]
