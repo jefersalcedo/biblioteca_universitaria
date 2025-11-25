@@ -1,73 +1,123 @@
 services:
-
-  frontend:
-    build: ./frontend
-    container_name: frontend
-    ports:
-      - "5000:5000"
+  # BASE DE DATOS - NUEVO
+  postgres:
+    image: postgres:13
+    container_name: biblioteca-postgres
     environment:
-      - API_GATEWAY_URL=http://api-gateway:8000
-    depends_on:
-      - api-gateway
+      POSTGRES_DB: biblioteca
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    healthcheck:  # ← AGREGAR HEALTHCHECK
+      test: ["CMD-SHELL", "pg_isready -U admin -d biblioteca"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - biblioteca-network
+
+  mongodb:
+    image: mongo:5
+    container_name: biblioteca-mongodb
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: admin
+        MONGO_INITDB_ROOT_PASSWORD: admin123
+    ports:
+       - "27017:27017"
+    healthcheck:  # ← AGREGAR HEALTHCHECK PARA MONGODB
+        test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+        interval: 10s
+        timeout: 10s
+        retries: 3
+        start_period: 40s
+    volumes:
+        - mongodb_data:/data/db
+    networks:
+        - biblioteca-network
 
   api-gateway:
     build: ./api-gateway
-    container_name: api-gateway
     ports:
       - "8000:8000"
     depends_on:
-      - auth-service
-    # Aquí puedes agregar los otros servicios base
+      - microservicio-autenticacion
+      - microservicio-catalogo
+      - microservicio-prestamos
+      - microservicio-reservas
+    networks:
+      - biblioteca-network
 
-  # Microservicio de Autenticación
-  auth-service:
-    build: ./services/authentication
-    container_name: auth-service
+  # MICROSERVICIO AUTENTICACIÓN ACTUALIZADO
+  microservicio-autenticacion:
+    build: ./microservicio-autenticacion
     ports:
       - "8001:8001"
     environment:
-      - DATABASE_URL=mongodb://auth-db:27017/auth_db
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/biblioteca
     depends_on:
-      - auth-db
+      postgres:
+        condition: service_healthy
+    networks:
+      - biblioteca-network
 
-  # Base de datos para el servicio de autenticación
-  auth-db:
-    image: mongo:latest
-    container_name: auth-db
+  microservicio-catalogo:
+    build: ./microservicio-catalogo
     ports:
-      - "27017:27017"
-    volumes:
-      - auth_data:/data/db
+      - "8002:8001"  # Cambiado para evitar conflicto
+    environment:
+      - MONGO_URI=mongodb://admin:admin123@mongodb:27017/
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - biblioteca-network
+    
 
-  # --- Plantillas de Microservicios ---
-  # TODO: Copiar y modificar "service1" para cada servicio según el tema seleccionado
-  
-  # Microservicio de Nombre_del_microservicio
-  service1-service:
-     build: ./services/service1 
-     container_name: service1-service
-     ports:
-       - "8002:8002"
-     environment:
-       - DATABASE_URL=postgresql://user:password@service1-db:5432/service1_db
-     depends_on:
-       - service1-db
+  microservicio-prestamos:
+    build: ./microservicio-prestamos
+    ports:
+      - "8003:8003"
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/biblioteca
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - biblioteca-network
 
-  # Base de datos para el servicio1
-  service1-db:
-     image: postgres:latest
-     container_name: service1-db
-     environment:
-       - POSTGRES_USER=user
-       - POSTGRES_PASSWORD=password
-       - POSTGRES_DB=service1_db
-     ports:
-       - "5432:5432"
-     volumes:
-       - service1_data:/var/lib/postgresql/data
+  microservicio-reservas:
+    build: ./microservicio-reservas
+    ports:
+      - "8004:8004"
+    environment:
+      - MONGO_URL=mongodb://admin:admin123@mongodb:27017/
+    depends_on:
+      mongodb:
+          condition: service_healthy
+    networks:
+      - biblioteca-network
 
+  frontend:
+    build: ./frontend
+    ports:
+      - "5000:5000"
+    environment:
+      - API_BASE=http://api-gateway:8000
+    depends_on:
+      - api-gateway
+    networks:
+      - biblioteca-network
+
+# VOLUMES - NUEVO
 volumes:
-  auth_data:
-  service1_data:
-  service2_data:
-  service3_data:
+  postgres_data:
+  mongodb_data:
+
+networks:
+  biblioteca-network:
+    driver: bridge
